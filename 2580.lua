@@ -7,7 +7,64 @@ local ToggleUI = false
 library.currentTab = nil
 library.flags = {}
 library.settings = {
+    theme = "Dark",
     size = {width = 600, height = 450},
+    colors = {
+        Dark = {
+            MainColor = Color3.fromRGB(16, 16, 16),
+            TabColor = Color3.fromRGB(22, 22, 22),
+            Bg_Color = Color3.fromRGB(17, 17, 17),
+            Zy_Color = Color3.fromRGB(17, 17, 17),
+            Button_Color = Color3.fromRGB(22, 22, 22),
+            Textbox_Color = Color3.fromRGB(22, 22, 22),
+            Dropdown_Color = Color3.fromRGB(22, 22, 22),
+            Keybind_Color = Color3.fromRGB(22, 22, 22),
+            Label_Color = Color3.fromRGB(22, 22, 22),
+            Slider_Color = Color3.fromRGB(22, 22, 22),
+            SliderBar_Color = Color3.fromRGB(37, 254, 152),
+            Toggle_Color = Color3.fromRGB(22, 22, 22),
+            Toggle_Off = Color3.fromRGB(34, 34, 34),
+            Toggle_On = Color3.fromRGB(254, 254, 254),
+            TextColor = Color3.fromRGB(255, 255, 255),
+            AccentColor = Color3.fromRGB(37, 254, 152)
+        },
+        Light = {
+            MainColor = Color3.fromRGB(240, 240, 240),
+            TabColor = Color3.fromRGB(230, 230, 230),
+            Bg_Color = Color3.fromRGB(245, 245, 245),
+            Zy_Color = Color3.fromRGB(235, 235, 235),
+            Button_Color = Color3.fromRGB(230, 230, 230),
+            Textbox_Color = Color3.fromRGB(230, 230, 230),
+            Dropdown_Color = Color3.fromRGB(230, 230, 230),
+            Keybind_Color = Color3.fromRGB(230, 230, 230),
+            Label_Color = Color3.fromRGB(230, 230, 230),
+            Slider_Color = Color3.fromRGB(230, 230, 230),
+            SliderBar_Color = Color3.fromRGB(0, 162, 255),
+            Toggle_Color = Color3.fromRGB(230, 230, 230),
+            Toggle_Off = Color3.fromRGB(200, 200, 200),
+            Toggle_On = Color3.fromRGB(0, 162, 255),
+            TextColor = Color3.fromRGB(50, 50, 50),
+            AccentColor = Color3.fromRGB(0, 162, 255)
+        },
+        Cyber = {
+            MainColor = Color3.fromRGB(10, 10, 20),
+            TabColor = Color3.fromRGB(15, 15, 25),
+            Bg_Color = Color3.fromRGB(12, 12, 22),
+            Zy_Color = Color3.fromRGB(15, 15, 25),
+            Button_Color = Color3.fromRGB(20, 20, 30),
+            Textbox_Color = Color3.fromRGB(20, 20, 30),
+            Dropdown_Color = Color3.fromRGB(20, 20, 30),
+            Keybind_Color = Color3.fromRGB(20, 20, 30),
+            Label_Color = Color3.fromRGB(20, 20, 30),
+            Slider_Color = Color3.fromRGB(20, 20, 30),
+            SliderBar_Color = Color3.fromRGB(0, 255, 255),
+            Toggle_Color = Color3.fromRGB(20, 20, 30),
+            Toggle_Off = Color3.fromRGB(30, 30, 40),
+            Toggle_On = Color3.fromRGB(0, 255, 255),
+            TextColor = Color3.fromRGB(255, 255, 255),
+            AccentColor = Color3.fromRGB(0, 255, 255)
+        }
+    }
 }
 
 local services = setmetatable({}, {
@@ -40,7 +97,7 @@ function Ripple(obj)
         Ripple.Image = "rbxassetid://2708891598"
         Ripple.ImageTransparency = 0.800
         Ripple.ScaleType = Enum.ScaleType.Fit
-        Ripple.ImageColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
+        Ripple.ImageColor3 = library.settings.colors[library.settings.theme].AccentColor
         Ripple.Position = UDim2.new(
             (mouse.X - Ripple.AbsolutePosition.X) / obj.AbsoluteSize.X,
             0,
@@ -129,80 +186,41 @@ function drag(frame, hold)
     end)
 end
 
-local library = {}
-local ToggleUI = false
-library.currentTab = nil
-library.flags = {}
-
-local function createRainbowGradient()
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 0.8, 1)),
-        ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.2, 0.8, 1)),
-        ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.4, 0.8, 1)),
-        ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.6, 0.8, 1)),
-        ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.8, 0.8, 1)),
-        ColorSequenceKeypoint.new(1, Color3.fromHSV(1, 0.8, 1))
-    })
-    gradient.Rotation = 45
-    return gradient
+function applyTheme(theme)
+    library.settings.theme = theme
+    -- This function will be called when theme changes to update all UI elements
 end
 
-local function createDynamicBackground()
-    local frame = Instance.new("Frame")
-    frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-    
-    local gradient = createRainbowGradient()
-    gradient.Parent = frame
-    
-    spawn(function()
-        while frame.Parent do
-            for i = 0, 1, 0.01 do
-                gradient.Offset = Vector2.new(i, i)
-                task.wait(0.05)
-            end
-        end
-    end)
-    
-    return frame
-end
-
-function library.new(library, name)
+function library.new(library, name, theme)
     for _, v in next, services.CoreGui:GetChildren() do
         if v.Name == "EnhancedDynamicUI" then
             v:Destroy()
         end
     end
 
+    local config = library.settings.colors[library.settings.theme]
+    
     local dogent = Instance.new("ScreenGui")
     local Main = Instance.new("Frame")
     local MainBorder = Instance.new("Frame")
-    local MainGradient = createRainbowGradient()
+    local MainGradient = Instance.new("UIGradient")
     local MainC = Instance.new("UICorner")
     local TabMain = Instance.new("Frame")
     local SB = Instance.new("Frame")
     local SBC = Instance.new("UICorner")
     local Side = Instance.new("Frame")
-    local SideG = createRainbowGradient()
+    local SideG = Instance.new("UIGradient")
     local TabBtns = Instance.new("ScrollingFrame")
     local TabBtnsL = Instance.new("UIListLayout")
     local ScriptTitle = Instance.new("TextLabel")
+    local SBG = Instance.new("UIGradient")
     local DropShadowHolder = Instance.new("Frame")
     local DropShadow = Instance.new("ImageLabel")
     local UICornerMain = Instance.new("UICorner")
+    local SettingsBtn = Instance.new("ImageButton")
     local SearchBox = Instance.new("TextBox")
     local SearchBoxC = Instance.new("UICorner")
     local SearchIcon = Instance.new("ImageLabel")
-    
-    -- Mini UI for when main UI is hidden
-    local MiniUI = Instance.new("Frame")
-    local MiniUICorner = Instance.new("UICorner")
-    local MiniUIBorder = Instance.new("Frame")
-    local MiniUIGradient = createRainbowGradient()
-    local MiniUIBorderCorner = Instance.new("UICorner")
-    local MiniUIOpen = Instance.new("TextButton")
-    local MiniUIClose = Instance.new("TextButton")
-    local MiniUIText = Instance.new("TextLabel")
 
     if syn and syn.protect_gui then
         syn.protect_gui(dogent)
@@ -217,13 +235,11 @@ function library.new(library, name)
     
     function ToggleUILib()
         if not ToggleUI then
-            Main.Visible = false
-            MiniUI.Visible = true
+            dogent.Enabled = false
             ToggleUI = true
         else
-            Main.Visible = true
-            MiniUI.Visible = false
             ToggleUI = false
+            dogent.Enabled = true
         end
     end
     
@@ -231,7 +247,7 @@ function library.new(library, name)
     Main.Name = "Main"
     Main.Parent = dogent
     Main.AnchorPoint = Vector2.new(0.5, 0.5)
-    Main.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    Main.BackgroundColor3 = config.Bg_Color
     Main.BorderSizePixel = 0
     Main.Position = UDim2.new(0.5, 0, 0.5, 0)
     Main.Size = UDim2.new(0, library.settings.size.width, 0, library.settings.size.height)
@@ -248,6 +264,11 @@ function library.new(library, name)
     MainBorder.Size = UDim2.new(1, 6, 1, 6)
     MainBorder.ZIndex = 0
     
+    MainGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, config.AccentColor),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    })
+    MainGradient.Rotation = 45
     MainGradient.Parent = MainBorder
     
     UICornerMain.CornerRadius = UDim.new(0, 8)
@@ -259,16 +280,26 @@ function library.new(library, name)
     
     drag(Main)
     
+    -- Settings Button
+    SettingsBtn.Name = "SettingsBtn"
+    SettingsBtn.Parent = Main
+    SettingsBtn.BackgroundTransparency = 1
+    SettingsBtn.Position = UDim2.new(1, -30, 0, 5)
+    SettingsBtn.Size = UDim2.new(0, 25, 0, 25)
+    SettingsBtn.Image = "rbxassetid://3926305904"
+    SettingsBtn.ImageRectOffset = Vector2.new(124, 364)
+    SettingsBtn.ImageRectSize = Vector2.new(36, 36)
+    
     -- Search Box
     SearchBox.Name = "SearchBox"
     SearchBox.Parent = Main
-    SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    SearchBox.BackgroundColor3 = config.TabColor
     SearchBox.Position = UDim2.new(0.22, 10, 0, 5)
-    SearchBox.Size = UDim2.new(0.77, -10, 0, 30)
+    SearchBox.Size = UDim2.new(0.77, -45, 0, 30)
     SearchBox.Font = Enum.Font.Gotham
     SearchBox.PlaceholderText = "Search..."
     SearchBox.Text = ""
-    SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SearchBox.TextColor3 = config.TextColor
     SearchBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
     SearchBox.TextSize = 14
     SearchBox.ClearTextOnFocus = false
@@ -299,7 +330,7 @@ function library.new(library, name)
     SB.Name = "SB"
     SB.Parent = Main
     SB.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    SB.BorderColor3 = Color3.fromRGB(20, 20, 30)
+    SB.BorderColor3 = config.MainColor
     SB.Size = UDim2.new(0, 8, 0, library.settings.size.height)
     
     SBC.CornerRadius = UDim.new(0, 6)
@@ -315,6 +346,12 @@ function library.new(library, name)
     Side.Position = UDim2.new(1, 0, 0, 0)
     Side.Size = UDim2.new(0, 110, 0, library.settings.size.height)
     
+    SideG.Color = ColorSequence.new({ 
+        ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
+        ColorSequenceKeypoint.new(1.00, config.Zy_Color) 
+    })
+    SideG.Rotation = 90
+    SideG.Name = "SideG"
     SideG.Parent = Side
     
     TabBtns.Name = "TabBtns"
@@ -341,113 +378,279 @@ function library.new(library, name)
     ScriptTitle.Size = UDim2.new(0, 102, 0, 20)
     ScriptTitle.Font = Enum.Font.GothamSemibold
     ScriptTitle.Text = name
-    ScriptTitle.TextColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
+    ScriptTitle.TextColor3 = config.AccentColor
     ScriptTitle.TextSize = 14.000
     ScriptTitle.TextScaled = true
     ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Create dynamic color effect for title
-    spawn(function()
-        while ScriptTitle do
-            ScriptTitle.TextColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
-            wait(0.1)
+    SBG.Color = ColorSequence.new({ 
+        ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
+        ColorSequenceKeypoint.new(1.00, config.Zy_Color) 
+    })
+    SBG.Rotation = 90
+    SBG.Name = "SBG"
+    SBG.Parent = SB
+    
+    TabBtnsL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabBtns.CanvasSize = UDim2.new(0, 0, 0, TabBtnsL.AbsoluteContentSize.Y + 18)
+    end)
+
+    -- Settings Panel
+    local SettingsPanel = Instance.new("Frame")
+    local SettingsPanelC = Instance.new("UICorner")
+    local SettingsTitle = Instance.new("TextLabel")
+    local CloseSettings = Instance.new("ImageButton")
+    local ThemeDropdown = Instance.new("TextButton")
+    local ThemeDropdownC = Instance.new("UICorner")
+    local ThemeLabel = Instance.new("TextLabel")
+    local SizeSlider = Instance.new("Frame")
+    local SizeLabel = Instance.new("TextLabel")
+    local WidthSlider = Instance.new("TextButton")
+    local WidthSliderC = Instance.new("UICorner")
+    local HeightSlider = Instance.new("TextButton")
+    local HeightSliderC = Instance.new("UICorner")
+    local WidthValue = Instance.new("TextBox")
+    local HeightValue = Instance.new("TextBox")
+    local AccentColorPicker = Instance.new("TextButton")
+    local AccentColorPickerC = Instance.new("UICorner")
+    local AccentColorLabel = Instance.new("TextLabel")
+    
+    SettingsPanel.Name = "SettingsPanel"
+    SettingsPanel.Parent = Main
+    SettingsPanel.BackgroundColor3 = config.TabColor
+    SettingsPanel.Position = UDim2.new(0.5, -150, 0.5, -100)
+    SettingsPanel.Size = UDim2.new(0, 300, 0, 200)
+    SettingsPanel.Visible = false
+    SettingsPanel.ZIndex = 10
+    
+    SettingsPanelC.CornerRadius = UDim.new(0, 8)
+    SettingsPanelC.Name = "SettingsPanelC"
+    SettingsPanelC.Parent = SettingsPanel
+    
+    SettingsTitle.Name = "SettingsTitle"
+    SettingsTitle.Parent = SettingsPanel
+    SettingsTitle.BackgroundTransparency = 1
+    SettingsTitle.Position = UDim2.new(0, 10, 0, 10)
+    SettingsTitle.Size = UDim2.new(0, 200, 0, 20)
+    SettingsTitle.Font = Enum.Font.GothamBold
+    SettingsTitle.Text = "UI Settings"
+    SettingsTitle.TextColor3 = config.TextColor
+    SettingsTitle.TextSize = 16
+    SettingsTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    CloseSettings.Name = "CloseSettings"
+    CloseSettings.Parent = SettingsPanel
+    CloseSettings.BackgroundTransparency = 1
+    CloseSettings.Position = UDim2.new(1, -30, 0, 10)
+    CloseSettings.Size = UDim2.new(0, 20, 0, 20)
+    CloseSettings.Image = "rbxassetid://3926305904"
+    CloseSettings.ImageRectOffset = Vector2.new(284, 4)
+    CloseSettings.ImageRectSize = Vector2.new(24, 24)
+    CloseSettings.ImageColor3 = config.TextColor
+    
+    ThemeLabel.Name = "ThemeLabel"
+    ThemeLabel.Parent = SettingsPanel
+    ThemeLabel.BackgroundTransparency = 1
+    ThemeLabel.Position = UDim2.new(0, 10, 0, 40)
+    ThemeLabel.Size = UDim2.new(0, 100, 0, 20)
+    ThemeLabel.Font = Enum.Font.Gotham
+    ThemeLabel.Text = "Theme:"
+    ThemeLabel.TextColor3 = config.TextColor
+    ThemeLabel.TextSize = 14
+    ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    ThemeDropdown.Name = "ThemeDropdown"
+    ThemeDropdown.Parent = SettingsPanel
+    ThemeDropdown.BackgroundColor3 = config.Bg_Color
+    ThemeDropdown.Position = UDim2.new(0, 120, 0, 40)
+    ThemeDropdown.Size = UDim2.new(0, 170, 0, 25)
+    ThemeDropdown.Font = Enum.Font.Gotham
+    ThemeDropdown.Text = library.settings.theme
+    ThemeDropdown.TextColor3 = config.TextColor
+    ThemeDropdown.TextSize = 14
+    
+    ThemeDropdownC.CornerRadius = UDim.new(0, 6)
+    ThemeDropdownC.Name = "ThemeDropdownC"
+    ThemeDropdownC.Parent = ThemeDropdown
+    
+    SizeLabel.Name = "SizeLabel"
+    SizeLabel.Parent = SettingsPanel
+    SizeLabel.BackgroundTransparency = 1
+    SizeLabel.Position = UDim2.new(0, 10, 0, 80)
+    SizeLabel.Size = UDim2.new(0, 100, 0, 20)
+    SizeLabel.Font = Enum.Font.Gotham
+    SizeLabel.Text = "UI Size:"
+    SizeLabel.TextColor3 = config.TextColor
+    SizeLabel.TextSize = 14
+    SizeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    WidthSlider.Name = "WidthSlider"
+    WidthSlider.Parent = SettingsPanel
+    WidthSlider.BackgroundColor3 = config.Bg_Color
+    WidthSlider.Position = UDim2.new(0, 120, 0, 80)
+    WidthSlider.Size = UDim2.new(0, 100, 0, 25)
+    WidthSlider.Font = Enum.Font.Gotham
+    WidthSlider.Text = "Width"
+    WidthSlider.TextColor3 = config.TextColor
+    WidthSlider.TextSize = 14
+    
+    WidthSliderC.CornerRadius = UDim.new(0, 6)
+    WidthSliderC.Name = "WidthSliderC"
+    WidthSliderC.Parent = WidthSlider
+    
+    WidthValue.Name = "WidthValue"
+    WidthValue.Parent = WidthSlider
+    WidthValue.BackgroundTransparency = 1
+    WidthValue.Position = UDim2.new(0, 0, 0, 0)
+    WidthValue.Size = UDim2.new(1, 0, 1, 0)
+    WidthValue.Font = Enum.Font.Gotham
+    WidthValue.Text = tostring(library.settings.size.width)
+    WidthValue.TextColor3 = config.TextColor
+    WidthValue.TextSize = 14
+    
+    HeightSlider.Name = "HeightSlider"
+    HeightSlider.Parent = SettingsPanel
+    HeightSlider.BackgroundColor3 = config.Bg_Color
+    HeightSlider.Position = UDim2.new(0, 230, 0, 80)
+    HeightSlider.Size = UDim2.new(0, 60, 0, 25)
+    HeightSlider.Font = Enum.Font.Gotham
+    HeightSlider.Text = "Height"
+    HeightSlider.TextColor3 = config.TextColor
+    HeightSlider.TextSize = 14
+    
+    HeightSliderC.CornerRadius = UDim.new(0, 6)
+    HeightSliderC.Name = "HeightSliderC"
+    HeightSliderC.Parent = HeightSlider
+    
+    HeightValue.Name = "HeightValue"
+    HeightValue.Parent = HeightSlider
+    HeightValue.BackgroundTransparency = 1
+    HeightValue.Position = UDim2.new(0, 0, 0, 0)
+    HeightValue.Size = UDim2.new(1, 0, 1, 0)
+    HeightValue.Font = Enum.Font.Gotham
+    HeightValue.Text = tostring(library.settings.size.height)
+    HeightValue.TextColor3 = config.TextColor
+    HeightValue.TextSize = 14
+    
+    AccentColorLabel.Name = "AccentColorLabel"
+    AccentColorLabel.Parent = SettingsPanel
+    AccentColorLabel.BackgroundTransparency = 1
+    AccentColorLabel.Position = UDim2.new(0, 10, 0, 120)
+    AccentColorLabel.Size = UDim2.new(0, 100, 0, 20)
+    AccentColorLabel.Font = Enum.Font.Gotham
+    AccentColorLabel.Text = "Accent Color:"
+    AccentColorLabel.TextColor3 = config.TextColor
+    AccentColorLabel.TextSize = 14
+    AccentColorLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    AccentColorPicker.Name = "AccentColorPicker"
+    AccentColorPicker.Parent = SettingsPanel
+    AccentColorPicker.BackgroundColor3 = config.AccentColor
+    AccentColorPicker.Position = UDim2.new(0, 120, 0, 120)
+    AccentColorPicker.Size = UDim2.new(0, 170, 0, 25)
+    AccentColorPicker.Font = Enum.Font.Gotham
+    AccentColorPicker.Text = "Pick Color"
+    AccentColorPicker.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AccentColorPicker.TextSize = 14
+    
+    AccentColorPickerC.CornerRadius = UDim.new(0, 6)
+    AccentColorPickerC.Name = "AccentColorPickerC"
+    AccentColorPickerC.Parent = AccentColorPicker
+    
+    -- Settings functionality
+    SettingsBtn.MouseButton1Click:Connect(function()
+        SettingsPanel.Visible = not SettingsPanel.Visible
+    end)
+    
+    CloseSettings.MouseButton1Click:Connect(function()
+        SettingsPanel.Visible = false
+    end)
+    
+    ThemeDropdown.MouseButton1Click:Connect(function()
+        local themes = {"Dark", "Light", "Cyber"}
+        local currentIndex = table.find(themes, library.settings.theme) or 1
+        local nextIndex = currentIndex % #themes + 1
+        library.settings.theme = themes[nextIndex]
+        ThemeDropdown.Text = library.settings.theme
+        applyTheme(library.settings.theme)
+    end)
+    
+    WidthValue.FocusLost:Connect(function()
+        local width = tonumber(WidthValue.Text)
+        if width and width >= 400 and width <= 1000 then
+            library.settings.size.width = width
+            Main.Size = UDim2.new(0, width, 0, library.settings.size.height)
+        else
+            WidthValue.Text = tostring(library.settings.size.width)
         end
     end)
     
-    -- Mini UI setup
-    MiniUI.Name = "MiniUI"
-    MiniUI.Parent = dogent
-    MiniUI.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-    MiniUI.BorderSizePixel = 0
-    MiniUI.Position = UDim2.new(1, -150, 0, 10)
-    MiniUI.Size = UDim2.new(0, 140, 0, 30)
-    MiniUI.Visible = false
-    
-    MiniUICorner.CornerRadius = UDim.new(0, 8)
-    MiniUICorner.Parent = MiniUI
-    
-    MiniUIBorder.Name = "MiniUIBorder"
-    MiniUIBorder.Parent = MiniUI
-    MiniUIBorder.AnchorPoint = Vector2.new(0.5, 0.5)
-    MiniUIBorder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    MiniUIBorder.BorderSizePixel = 0
-    MiniUIBorder.Position = UDim2.new(0.5, 0, 0.5, 0)
-    MiniUIBorder.Size = UDim2.new(1, 6, 1, 6)
-    MiniUIBorder.ZIndex = 0
-    
-    MiniUIGradient.Parent = MiniUIBorder
-    
-    MiniUIBorderCorner.CornerRadius = UDim.new(0, 8)
-    MiniUIBorderCorner.Parent = MiniUIBorder
-    
-    MiniUIOpen.Name = "MiniUIOpen"
-    MiniUIOpen.Parent = MiniUI
-    MiniUIOpen.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    MiniUIOpen.BackgroundTransparency = 1
-    MiniUIOpen.Size = UDim2.new(0, 30, 1, 0)
-    MiniUIOpen.Font = Enum.Font.GothamBold
-    MiniUIOpen.Text = "-"
-    MiniUIOpen.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MiniUIOpen.TextSize = 18
-    
-    MiniUIClose.Name = "MiniUIClose"
-    MiniUIClose.Parent = MiniUI
-    MiniUIClose.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    MiniUIClose.BackgroundTransparency = 1
-    MiniUIClose.Position = UDim2.new(1, -30, 0, 0)
-    MiniUIClose.Size = UDim2.new(0, 30, 1, 0)
-    MiniUIClose.Font = Enum.Font.GothamBold
-    MiniUIClose.Text = "X"
-    MiniUIClose.TextColor3 = Color3.fromRGB(255, 100, 100)
-    MiniUIClose.TextSize = 18
-    
-    MiniUIText.Name = "MiniUIText"
-    MiniUIText.Parent = MiniUI
-    MiniUIText.BackgroundTransparency = 1
-    MiniUIText.Position = UDim2.new(0, 35, 0, 0)
-    MiniUIText.Size = UDim2.new(0, 70, 1, 0)
-    MiniUIText.Font = Enum.Font.Gotham
-    MiniUIText.Text = "Open UI"
-    MiniUIText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MiniUIText.TextSize = 14
-    
-    -- Mini UI functionality
-    MiniUIOpen.MouseButton1Click:Connect(function()
-        ToggleUILib()
+    HeightValue.FocusLost:Connect(function()
+        local height = tonumber(HeightValue.Text)
+        if height and height >= 300 and height <= 800 then
+            library.settings.size.height = height
+            Main.Size = UDim2.new(0, library.settings.size.width, 0, height)
+        else
+            HeightValue.Text = tostring(library.settings.size.height)
+        end
     end)
     
-    MiniUIClose.MouseButton1Click:Connect(function()
-        dogent:Destroy()
+    AccentColorPicker.MouseButton1Click:Connect(function()
+        local colorPicker = Instance.new("TextButton")
+        colorPicker.Name = "ColorPicker"
+        colorPicker.Parent = Main
+        colorPicker.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        colorPicker.BorderSizePixel = 0
+        colorPicker.Position = UDim2.new(0.5, -100, 0.5, -100)
+        colorPicker.Size = UDim2.new(0, 200, 0, 200)
+        colorPicker.ZIndex = 20
+        colorPicker.Text = ""
+        
+        local colorWheel = Instance.new("ImageLabel")
+        colorWheel.Parent = colorPicker
+        colorWheel.BackgroundTransparency = 1
+        colorWheel.Size = UDim2.new(1, 0, 1, 0)
+        colorWheel.Image = "rbxassetid://2615689005"
+        colorWheel.ZIndex = 21
+        
+        local closePicker = function()
+            colorPicker:Destroy()
+        end
+        
+        colorWheel.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                local x = (input.Position.X - colorWheel.AbsolutePosition.X) / colorWheel.AbsoluteSize.X
+                local y = (input.Position.Y - colorWheel.AbsolutePosition.Y) / colorWheel.AbsoluteSize.Y
+                
+                if x >= 0 and x <= 1 and y >= 0 and y <= 1 then
+                    local h = (1 - y) * 360
+                    local s = x
+                    local v = 1
+                    local color = Color3.fromHSV(h/360, s, v)
+                    
+                    library.settings.colors[library.settings.theme].AccentColor = color
+                    AccentColorPicker.BackgroundColor3 = color
+                    ScriptTitle.TextColor3 = color
+                    -- Update other accent color elements here
+                end
+            elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                closePicker()
+            end
+        end)
+        
+        services.UserInputService.InputBegan:Connect(function(input, processed)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 and not processed then
+                if not colorPicker:IsDescendantOf(game) then return end
+                if not (input.Position.X >= colorPicker.AbsolutePosition.X and 
+                       input.Position.X <= colorPicker.AbsolutePosition.X + colorPicker.AbsoluteSize.X and
+                       input.Position.Y >= colorPicker.AbsolutePosition.Y and 
+                       input.Position.Y <= colorPicker.AbsolutePosition.Y + colorPicker.AbsoluteSize.Y) then
+                    closePicker()
+                end
+            end
+        end)
     end)
-    
-    drag(MiniUI)
-    
-    -- Welcome message frame
-    local WelcomeFrame = Instance.new("Frame")
-    local WelcomeCorner = Instance.new("UICorner")
-    local WelcomeText = Instance.new("TextLabel")
-    
-    WelcomeFrame.Name = "WelcomeFrame"
-    WelcomeFrame.Parent = Main
-    WelcomeFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    WelcomeFrame.BorderSizePixel = 0
-    WelcomeFrame.Position = UDim2.new(1, 10, 0, 0)
-    WelcomeFrame.Size = UDim2.new(0, 200, 0, 60)
-    WelcomeFrame.Visible = false
-    
-    WelcomeCorner.CornerRadius = UDim.new(0, 8)
-    WelcomeCorner.Parent = WelcomeFrame
-    
-    WelcomeText.Name = "WelcomeText"
-    WelcomeText.Parent = WelcomeFrame
-    WelcomeText.BackgroundTransparency = 1
-    WelcomeText.Size = UDim2.new(1, 0, 1, 0)
-    WelcomeText.Font = Enum.Font.Gotham
-    WelcomeText.Text = "Welcome to NE HUB Premium"
-    WelcomeText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    WelcomeText.TextSize = 14
-    WelcomeText.TextWrapped = true
-    
+
     -- Search functionality
     local function filterElements(searchText)
         if not searchText or searchText == "" then
@@ -527,15 +730,11 @@ function library.new(library, name)
     end)
 
     SearchBox.Focused:Connect(function()
-        SearchIcon.ImageColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
+        SearchIcon.ImageColor3 = config.AccentColor
     end)
 
     SearchBox.FocusLost:Connect(function()
         SearchIcon.ImageColor3 = Color3.fromRGB(180, 180, 180)
-    end)
-
-    TabBtnsL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabBtns.CanvasSize = UDim2.new(0, 0, 0, TabBtnsL.AbsoluteContentSize.Y + 18)
     end)
 
     local window = {}
@@ -563,7 +762,7 @@ function library.new(library, name)
         TabIco.Size = UDim2.new(0, 24, 0, 24)
         TabIco.Image = ("rbxassetid://%s"):format((icon or 4370341699))
         TabIco.ImageTransparency = 0.2
-        TabIco.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        TabIco.ImageColor3 = config.TextColor
         
         TabText.Name = "TabText"
         TabText.Parent = TabIco
@@ -573,7 +772,7 @@ function library.new(library, name)
         TabText.Size = UDim2.new(0, 76, 0, 24)
         TabText.Font = Enum.Font.GothamSemibold
         TabText.Text = name
-        TabText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabText.TextColor3 = config.TextColor
         TabText.TextSize = 14.000
         TabText.TextXAlignment = Enum.TextXAlignment.Left
         TabText.TextTransparency = 0.2
@@ -624,7 +823,7 @@ function library.new(library, name)
             
             Section.Name = "Section"
             Section.Parent = Tab
-            Section.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            Section.BackgroundColor3 = config.TabColor
             Section.BackgroundTransparency = 1.000
             Section.BorderSizePixel = 0
             Section.ClipsDescendants = true
@@ -642,7 +841,7 @@ function library.new(library, name)
             SectionText.Size = UDim2.new(0, 401, 0, 36)
             SectionText.Font = Enum.Font.GothamSemibold
             SectionText.Text = name
-            SectionText.TextColor3 = Color3.fromRGB(255, 255, 255)
+            SectionText.TextColor3 = config.TextColor
             SectionText.TextSize = 16.000
             SectionText.TextXAlignment = Enum.TextXAlignment.Left
             
@@ -652,17 +851,17 @@ function library.new(library, name)
             SectionOpen.BorderSizePixel = 0
             SectionOpen.Position = UDim2.new(0, -33, 0, 5)
             SectionOpen.Size = UDim2.new(0, 26, 0, 26)
-            SectionOpen.Image = "http://www.roblox.com/asset/?id=6031302934"
-            SectionOpen.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            SectionOpen.Image = "<url id="temp" type="url" status="" title="" wc="">http://www.roblox.com/asset/?id=6031302934</url>"
+            SectionOpen.ImageColor3 = config.TextColor
             
             SectionOpened.Name = "SectionOpened"
             SectionOpened.Parent = SectionOpen
             SectionOpened.BackgroundTransparency = 1.000
             SectionOpened.BorderSizePixel = 0
             SectionOpened.Size = UDim2.new(0, 26, 0, 26)
-            SectionOpened.Image = "http://www.roblox.com/asset/?id=6031302932"
+            SectionOpened.Image = "<url id="temp" type="url" status="" title="" wc="">http://www.roblox.com/asset/?id=6031302932</url>"
             SectionOpened.ImageTransparency = 1.000
-            SectionOpened.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            SectionOpened.ImageColor3 = config.TextColor
             
             SectionToggle.Name = "SectionToggle"
             SectionToggle.Parent = SectionOpen
@@ -722,13 +921,13 @@ function library.new(library, name)
                 
                 Btn.Name = "Btn"
                 Btn.Parent = BtnModule
-                Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                Btn.BackgroundColor3 = config.Button_Color
                 Btn.BorderSizePixel = 0
                 Btn.Size = UDim2.new(0, 428, 0, 38)
                 Btn.AutoButtonColor = false
                 Btn.Font = Enum.Font.GothamSemibold
                 Btn.Text = "   " .. text
-                Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Btn.TextColor3 = config.TextColor
                 Btn.TextSize = 16.000
                 Btn.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -741,14 +940,6 @@ function library.new(library, name)
                         Ripple(Btn)
                     end)
                     spawn(callback)
-                end)
-                
-                -- Dynamic color effect
-                spawn(function()
-                    while Btn do
-                        Btn.BackgroundColor3 = Color3.fromHSV(tick()%5/5, 0.5, 0.2)
-                        wait(0.1)
-                    end
                 end)
             end
             
@@ -766,24 +957,16 @@ function library.new(library, name)
                 LabelModule.Size = UDim2.new(0, 428, 0, 19)
                 
                 TextLabel.Parent = LabelModule
-                TextLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                TextLabel.BackgroundColor3 = config.Label_Color
                 TextLabel.Size = UDim2.new(0, 428, 0, 22)
                 TextLabel.Font = Enum.Font.GothamSemibold
                 TextLabel.Text = text
-                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextLabel.TextColor3 = config.TextColor
                 TextLabel.TextSize = 14.000
                 
                 LabelC.CornerRadius = UDim.new(0, 8)
                 LabelC.Name = "LabelC"
                 LabelC.Parent = TextLabel
-                
-                -- Dynamic color effect
-                spawn(function()
-                    while TextLabel do
-                        TextLabel.TextColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
-                        wait(0.1)
-                    end
-                end)
                 
                 return TextLabel
             end
@@ -813,13 +996,13 @@ function library.new(library, name)
                 
                 ToggleBtn.Name = "ToggleBtn"
                 ToggleBtn.Parent = ToggleModule
-                ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                ToggleBtn.BackgroundColor3 = config.Toggle_Color
                 ToggleBtn.BorderSizePixel = 0
                 ToggleBtn.Size = UDim2.new(0, 428, 0, 38)
                 ToggleBtn.AutoButtonColor = false
                 ToggleBtn.Font = Enum.Font.GothamSemibold
                 ToggleBtn.Text = "   " .. text
-                ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                ToggleBtn.TextColor3 = config.TextColor
                 ToggleBtn.TextSize = 16.000
                 ToggleBtn.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -829,14 +1012,14 @@ function library.new(library, name)
                 
                 ToggleDisable.Name = "ToggleDisable"
                 ToggleDisable.Parent = ToggleBtn
-                ToggleDisable.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                ToggleDisable.BackgroundColor3 = config.Bg_Color
                 ToggleDisable.BorderSizePixel = 0
                 ToggleDisable.Position = UDim2.new(0.901869178, 0, 0.208881587, 0)
                 ToggleDisable.Size = UDim2.new(0, 36, 0, 22)
                 
                 ToggleSwitch.Name = "ToggleSwitch"
                 ToggleSwitch.Parent = ToggleDisable
-                ToggleSwitch.BackgroundColor3 = enabled and Color3.fromHSV(tick()%5/5, 0.8, 1) or Color3.fromRGB(60, 60, 70)
+                ToggleSwitch.BackgroundColor3 = config.Toggle_Off
                 ToggleSwitch.Size = UDim2.new(0, 24, 0, 22)
                 
                 ToggleSwitchC.CornerRadius = UDim.new(0, 8)
@@ -858,7 +1041,7 @@ function library.new(library, name)
                         services.TweenService
                             :Create(ToggleSwitch, TweenInfo.new(0.2), {
                                 Position = UDim2.new(0, (state and ToggleSwitch.Size.X.Offset / 2 or 0), 0, 0),
-                                BackgroundColor3 = (state and Color3.fromHSV(tick()%5/5, 0.8, 1) or Color3.fromRGB(60, 60, 70)),
+                                BackgroundColor3 = (state and config.Toggle_On or config.Toggle_Off),
                             })
                             :Play()
                         library.flags[flag] = state
@@ -873,16 +1056,6 @@ function library.new(library, name)
                 
                 ToggleBtn.MouseButton1Click:Connect(function()
                     funcs:SetState()
-                end)
-                
-                -- Dynamic color effect for toggle
-                spawn(function()
-                    while ToggleSwitch do
-                        if library.flags[flag] then
-                            ToggleSwitch.BackgroundColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
-                        end
-                        wait(0.1)
-                    end
                 end)
                 
                 return funcs
@@ -937,13 +1110,13 @@ function library.new(library, name)
                 
                 KeybindBtn.Name = "KeybindBtn"
                 KeybindBtn.Parent = KeybindModule
-                KeybindBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                KeybindBtn.BackgroundColor3 = config.Keybind_Color
                 KeybindBtn.BorderSizePixel = 0
                 KeybindBtn.Size = UDim2.new(0, 428, 0, 38)
                 KeybindBtn.AutoButtonColor = false
                 KeybindBtn.Font = Enum.Font.GothamSemibold
                 KeybindBtn.Text = "   " .. text
-                KeybindBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                KeybindBtn.TextColor3 = config.TextColor
                 KeybindBtn.TextSize = 16.000
                 KeybindBtn.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -953,14 +1126,14 @@ function library.new(library, name)
                 
                 KeybindValue.Name = "KeybindValue"
                 KeybindValue.Parent = KeybindBtn
-                KeybindValue.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                KeybindValue.BackgroundColor3 = config.Bg_Color
                 KeybindValue.BorderSizePixel = 0
                 KeybindValue.Position = UDim2.new(0.763033211, 0, 0.289473683, 0)
                 KeybindValue.Size = UDim2.new(0, 100, 0, 28)
                 KeybindValue.AutoButtonColor = false
                 KeybindValue.Font = Enum.Font.Gotham
                 KeybindValue.Text = keyTxt
-                KeybindValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+                KeybindValue.TextColor3 = config.TextColor
                 KeybindValue.TextSize = 14.000
                 
                 KeybindValueC.CornerRadius = UDim.new(0, 8)
@@ -1040,13 +1213,13 @@ function library.new(library, name)
                 
                 TextboxBack.Name = "TextboxBack"
                 TextboxBack.Parent = TextboxModule
-                TextboxBack.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                TextboxBack.BackgroundColor3 = config.Textbox_Color
                 TextboxBack.BorderSizePixel = 0
                 TextboxBack.Size = UDim2.new(0, 428, 0, 38)
                 TextboxBack.AutoButtonColor = false
                 TextboxBack.Font = Enum.Font.GothamSemibold
                 TextboxBack.Text = "   " .. text
-                TextboxBack.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextboxBack.TextColor3 = config.TextColor
                 TextboxBack.TextSize = 16.000
                 TextboxBack.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -1056,14 +1229,14 @@ function library.new(library, name)
                 
                 BoxBG.Name = "BoxBG"
                 BoxBG.Parent = TextboxBack
-                BoxBG.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                BoxBG.BackgroundColor3 = config.Bg_Color
                 BoxBG.BorderSizePixel = 0
                 BoxBG.Position = UDim2.new(0.763033211, 0, 0.289473683, 0)
                 BoxBG.Size = UDim2.new(0, 100, 0, 28)
                 BoxBG.AutoButtonColor = false
                 BoxBG.Font = Enum.Font.Gotham
                 BoxBG.Text = ""
-                BoxBG.TextColor3 = Color3.fromRGB(255, 255, 255)
+                BoxBG.TextColor3 = config.TextColor
                 BoxBG.TextSize = 14.000
                 
                 BoxBGC.CornerRadius = UDim.new(0, 8)
@@ -1077,7 +1250,7 @@ function library.new(library, name)
                 TextBox.Size = UDim2.new(1, 0, 1, 0)
                 TextBox.Font = Enum.Font.Gotham
                 TextBox.Text = default
-                TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                TextBox.TextColor3 = config.TextColor
                 TextBox.TextSize = 14.000
                 
                 TextboxBackL.Name = "TextboxBackL"
@@ -1140,13 +1313,13 @@ function library.new(library, name)
                 
                 SliderBack.Name = "SliderBack"
                 SliderBack.Parent = SliderModule
-                SliderBack.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                SliderBack.BackgroundColor3 = config.Slider_Color
                 SliderBack.BorderSizePixel = 0
                 SliderBack.Size = UDim2.new(0, 428, 0, 38)
                 SliderBack.AutoButtonColor = false
                 SliderBack.Font = Enum.Font.GothamSemibold
                 SliderBack.Text = "   " .. text
-                SliderBack.TextColor3 = Color3.fromRGB(255, 255, 255)
+                SliderBack.TextColor3 = config.TextColor
                 SliderBack.TextSize = 16.000
                 SliderBack.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -1157,7 +1330,7 @@ function library.new(library, name)
                 SliderBar.Name = "SliderBar"
                 SliderBar.Parent = SliderBack
                 SliderBar.AnchorPoint = Vector2.new(0, 0.5)
-                SliderBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                SliderBar.BackgroundColor3 = config.Bg_Color
                 SliderBar.BorderSizePixel = 0
                 SliderBar.Position = UDim2.new(0.369000018, 40, 0.5, 0)
                 SliderBar.Size = UDim2.new(0, 140, 0, 12)
@@ -1168,7 +1341,7 @@ function library.new(library, name)
                 
                 SliderPart.Name = "SliderPart"
                 SliderPart.Parent = SliderBar
-                SliderPart.BackgroundColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
+                SliderPart.BackgroundColor3 = config.SliderBar_Color
                 SliderPart.BorderSizePixel = 0
                 SliderPart.Size = UDim2.new(0, 54, 0, 13)
                 
@@ -1178,14 +1351,14 @@ function library.new(library, name)
                 
                 SliderValBG.Name = "SliderValBG"
                 SliderValBG.Parent = SliderBack
-                SliderValBG.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                SliderValBG.BackgroundColor3 = config.Bg_Color
                 SliderValBG.BorderSizePixel = 0
                 SliderValBG.Position = UDim2.new(0.883177578, 0, 0.131578952, 0)
                 SliderValBG.Size = UDim2.new(0, 44, 0, 28)
                 SliderValBG.AutoButtonColor = false
                 SliderValBG.Font = Enum.Font.Gotham
                 SliderValBG.Text = ""
-                SliderValBG.TextColor3 = Color3.fromRGB(255, 255, 255)
+                SliderValBG.TextColor3 = config.TextColor
                 SliderValBG.TextSize = 14.000
                 
                 SliderValBGC.CornerRadius = UDim.new(0, 8)
@@ -1200,7 +1373,7 @@ function library.new(library, name)
                 SliderValue.Size = UDim2.new(1, 0, 1, 0)
                 SliderValue.Font = Enum.Font.Gotham
                 SliderValue.Text = "1000"
-                SliderValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+                SliderValue.TextColor3 = config.TextColor
                 SliderValue.TextSize = 14.000
                 
                 MinSlider.Name = "MinSlider"
@@ -1212,7 +1385,7 @@ function library.new(library, name)
                 MinSlider.Size = UDim2.new(0, 20, 0, 20)
                 MinSlider.Font = Enum.Font.Gotham
                 MinSlider.Text = "-"
-                MinSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+                MinSlider.TextColor3 = config.TextColor
                 MinSlider.TextSize = 24.000
                 MinSlider.TextWrapped = true
                 
@@ -1226,7 +1399,7 @@ function library.new(library, name)
                 AddSlider.Size = UDim2.new(0, 20, 0, 20)
                 AddSlider.Font = Enum.Font.Gotham
                 AddSlider.Text = "+"
-                AddSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+                AddSlider.TextColor3 = config.TextColor
                 AddSlider.TextSize = 24.000
                 AddSlider.TextWrapped = true
                 
@@ -1238,7 +1411,7 @@ function library.new(library, name)
                         end
                         percent = math.clamp(percent, 0, 1)
                         if precise then
-                            value = value or tonumber(string.format("%.1f", tostring(min + (max - min) * percent))
+                            value = value or tonumber(string.format("%.1f", tostring(min + (max - min) * percent)))
                         else
                             value = value or math.floor(min + (max - min) * percent)
                         end
@@ -1331,14 +1504,6 @@ function library.new(library, name)
                     end
                 end)
                 
-                -- Dynamic color effect for slider
-                spawn(function()
-                    while SliderPart do
-                        SliderPart.BackgroundColor3 = Color3.fromHSV(tick()%5/5, 0.8, 1)
-                        wait(0.1)
-                    end
-                end)
-                
                 return funcs
             end
             
@@ -1369,13 +1534,13 @@ function library.new(library, name)
                 
                 DropdownTop.Name = "DropdownTop"
                 DropdownTop.Parent = DropdownModule
-                DropdownTop.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                DropdownTop.BackgroundColor3 = config.Dropdown_Color
                 DropdownTop.BorderSizePixel = 0
                 DropdownTop.Size = UDim2.new(0, 428, 0, 38)
                 DropdownTop.AutoButtonColor = false
                 DropdownTop.Font = Enum.Font.GothamSemibold
                 DropdownTop.Text = ""
-                DropdownTop.TextColor3 = Color3.fromRGB(255, 255, 255)
+                DropdownTop.TextColor3 = config.TextColor
                 DropdownTop.TextSize = 16.000
                 DropdownTop.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -1393,7 +1558,7 @@ function library.new(library, name)
                 DropdownOpen.Size = UDim2.new(0, 20, 0, 20)
                 DropdownOpen.Font = Enum.Font.Gotham
                 DropdownOpen.Text = "+"
-                DropdownOpen.TextColor3 = Color3.fromRGB(255, 255, 255)
+                DropdownOpen.TextColor3 = config.TextColor
                 DropdownOpen.TextSize = 24.000
                 DropdownOpen.TextWrapped = true
                 
@@ -1408,7 +1573,7 @@ function library.new(library, name)
                 DropdownText.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
                 DropdownText.PlaceholderText = text
                 DropdownText.Text = ""
-                DropdownText.TextColor3 = Color3.fromRGB(255, 255, 255)
+                DropdownText.TextColor3 = config.TextColor
                 DropdownText.TextSize = 16.000
                 DropdownText.TextXAlignment = Enum.TextXAlignment.Left
                 
@@ -1485,14 +1650,14 @@ function library.new(library, name)
                     
                     Option.Name = "Option_" .. option
                     Option.Parent = DropdownModule
-                    Option.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                    Option.BackgroundColor3 = config.TabColor
                     Option.BorderSizePixel = 0
                     Option.Position = UDim2.new(0, 0, 0.328125, 0)
                     Option.Size = UDim2.new(0, 428, 0, 26)
                     Option.AutoButtonColor = false
                     Option.Font = Enum.Font.Gotham
                     Option.Text = option
-                    Option.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    Option.TextColor3 = config.TextColor
                     Option.TextSize = 14.000
                     
                     OptionC.CornerRadius = UDim.new(0, 8)
@@ -1535,6 +1700,50 @@ function library.new(library, name)
         
         return tab
     end
+    
+    -- Add a close button and a minimize button
+    local MinimizeButton = Instance.new("TextButton")
+    local CloseButton = Instance.new("TextButton")
+    
+    MinimizeButton.Name = "MinimizeButton"
+    MinimizeButton.Parent = Main
+    MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeButton.BackgroundTransparency = 1.000
+    MinimizeButton.BorderSizePixel = 0
+    MinimizeButton.Position = UDim2.new(1, -30, 0, 5)
+    MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+    MinimizeButton.Font = Enum.Font.Gotham
+    MinimizeButton.Text = "-"
+    MinimizeButton.TextColor3 = config.TextColor
+    MinimizeButton.TextSize = 24.000
+    
+    CloseButton.Name = "CloseButton"
+    CloseButton.Parent = Main
+    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.BackgroundTransparency = 1.000
+    CloseButton.BorderSizePixel = 0
+    CloseButton.Position = UDim2.new(1, -55, 0, 5)
+    CloseButton.Size = UDim2.new(0, 25, 0, 25)
+    CloseButton.Font = Enum.Font.Gotham
+    CloseButton.Text = "X"
+    CloseButton.TextColor3 = config.TextColor
+    CloseButton.TextSize = 24.000
+    
+    MinimizeButton.MouseButton1Click:Connect(function()
+        Main.Visible = false
+        MinimizeButton.Visible = false
+        CloseButton.Visible = false
+        Main.Position = UDim2.new(0, 0, 0, 0)
+        Main.Size = UDim2.new(0, 0, 0, 0)
+        MinimizeButton.Position = UDim2.new(1, -30, 0, 5)
+        CloseButton.Position = UDim2.new(1, -55, 0, 5)
+        MinimizeButton.Visible = true
+        CloseButton.Visible = true
+    end)
+    
+    CloseButton.MouseButton1Click:Connect(function()
+        Main:Destroy()
+    end)
     
     return window
 end
