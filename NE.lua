@@ -6,66 +6,6 @@ local library = {}
 local ToggleUI = false
 library.currentTab = nil
 library.flags = {}
-library.settings = {
-    theme = "Dark",
-    size = {width = 600, height = 450},
-    colors = {
-        Dark = {
-            MainColor = Color3.fromRGB(16, 16, 16),
-            TabColor = Color3.fromRGB(22, 22, 22),
-            Bg_Color = Color3.fromRGB(17, 17, 17),
-            Zy_Color = Color3.fromRGB(17, 17, 17),
-            Button_Color = Color3.fromRGB(22, 22, 22),
-            Textbox_Color = Color3.fromRGB(22, 22, 22),
-            Dropdown_Color = Color3.fromRGB(22, 22, 22),
-            Keybind_Color = Color3.fromRGB(22, 22, 22),
-            Label_Color = Color3.fromRGB(22, 22, 22),
-            Slider_Color = Color3.fromRGB(22, 22, 22),
-            SliderBar_Color = Color3.fromRGB(37, 254, 152),
-            Toggle_Color = Color3.fromRGB(22, 22, 22),
-            Toggle_Off = Color3.fromRGB(34, 34, 34),
-            Toggle_On = Color3.fromRGB(254, 254, 254),
-            TextColor = Color3.fromRGB(255, 255, 255),
-            AccentColor = Color3.fromRGB(37, 254, 152)
-        },
-        Light = {
-            MainColor = Color3.fromRGB(240, 240, 240),
-            TabColor = Color3.fromRGB(230, 230, 230),
-            Bg_Color = Color3.fromRGB(245, 245, 245),
-            Zy_Color = Color3.fromRGB(235, 235, 235),
-            Button_Color = Color3.fromRGB(230, 230, 230),
-            Textbox_Color = Color3.fromRGB(230, 230, 230),
-            Dropdown_Color = Color3.fromRGB(230, 230, 230),
-            Keybind_Color = Color3.fromRGB(230, 230, 230),
-            Label_Color = Color3.fromRGB(230, 230, 230),
-            Slider_Color = Color3.fromRGB(230, 230, 230),
-            SliderBar_Color = Color3.fromRGB(0, 162, 255),
-            Toggle_Color = Color3.fromRGB(230, 230, 230),
-            Toggle_Off = Color3.fromRGB(200, 200, 200),
-            Toggle_On = Color3.fromRGB(0, 162, 255),
-            TextColor = Color3.fromRGB(50, 50, 50),
-            AccentColor = Color3.fromRGB(0, 162, 255)
-        },
-        Cyber = {
-            MainColor = Color3.fromRGB(10, 10, 20),
-            TabColor = Color3.fromRGB(15, 15, 25),
-            Bg_Color = Color3.fromRGB(12, 12, 22),
-            Zy_Color = Color3.fromRGB(15, 15, 25),
-            Button_Color = Color3.fromRGB(20, 20, 30),
-            Textbox_Color = Color3.fromRGB(20, 20, 30),
-            Dropdown_Color = Color3.fromRGB(20, 20, 30),
-            Keybind_Color = Color3.fromRGB(20, 20, 30),
-            Label_Color = Color3.fromRGB(20, 20, 30),
-            Slider_Color = Color3.fromRGB(20, 20, 30),
-            SliderBar_Color = Color3.fromRGB(0, 255, 255),
-            Toggle_Color = Color3.fromRGB(20, 20, 30),
-            Toggle_Off = Color3.fromRGB(30, 30, 40),
-            Toggle_On = Color3.fromRGB(0, 255, 255),
-            TextColor = Color3.fromRGB(255, 255, 255),
-            AccentColor = Color3.fromRGB(0, 255, 255)
-        }
-    }
-}
 
 local services = setmetatable({}, {
     __index = function(t, k)
@@ -97,7 +37,7 @@ function Ripple(obj)
         Ripple.Image = "rbxassetid://2708891598"
         Ripple.ImageTransparency = 0.800
         Ripple.ScaleType = Enum.ScaleType.Fit
-        Ripple.ImageColor3 = library.settings.colors[library.settings.theme].AccentColor
+        Ripple.ImageColor3 = Color3.fromRGB(255, 255, 255)
         Ripple.Position = UDim2.new(
             (mouse.X - Ripple.AbsolutePosition.X) / obj.AbsoluteSize.X,
             0,
@@ -186,19 +126,24 @@ function drag(frame, hold)
     end)
 end
 
-function applyTheme(theme)
-    library.settings.theme = theme
-    -- This function will be called when theme changes to update all UI elements
-end
-
-function library.new(library, name, theme)
+function library.new(library, name)
     for _, v in next, services.CoreGui:GetChildren() do
         if v.Name == "EnhancedDynamicUI" then
             v:Destroy()
         end
     end
 
-    local config = library.settings.colors[library.settings.theme]
+    local config = {
+        MainColor = Color3.fromRGB(255, 255, 255),
+        Bg_Color = Color3.fromRGB(30, 30, 30),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        AccentColor = Color3.fromRGB(0, 162, 255),
+        Button_Color = Color3.fromRGB(50, 50, 50),
+        Slider_Color = Color3.fromRGB(50, 50, 50),
+        SliderBar_Color = Color3.fromRGB(0, 162, 255),
+        Toggle_Off = Color3.fromRGB(50, 50, 50),
+        Toggle_On = Color3.fromRGB(0, 162, 255)
+    }
     
     local dogent = Instance.new("ScreenGui")
     local Main = Instance.new("Frame")
@@ -217,10 +162,10 @@ function library.new(library, name, theme)
     local DropShadowHolder = Instance.new("Frame")
     local DropShadow = Instance.new("ImageLabel")
     local UICornerMain = Instance.new("UICorner")
-    local SettingsBtn = Instance.new("ImageButton")
-    local SearchBox = Instance.new("TextBox")
-    local SearchBoxC = Instance.new("UICorner")
-    local SearchIcon = Instance.new("ImageLabel")
+    local MinimizeBtn = Instance.new("ImageButton")
+    local CloseBtn = Instance.new("ImageButton")
+    local WelcomeUI = Instance.new("Frame")
+    local WelcomeText = Instance.new("TextLabel")
 
     if syn and syn.protect_gui then
         syn.protect_gui(dogent)
@@ -246,11 +191,11 @@ function library.new(library, name, theme)
     -- Main UI Frame
     Main.Name = "Main"
     Main.Parent = dogent
-    Main.AnchorPoint = Vector2.new(0.5, 0.5)
+    Main.AnchorPoint = Vector2.new(1, 0)
     Main.BackgroundColor3 = config.Bg_Color
     Main.BorderSizePixel = 0
-    Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Main.Size = UDim2.new(0, library.settings.size.width, 0, library.settings.size.height)
+    Main.Position = UDim2.new(1, -10, 0, 10)
+    Main.Size = UDim2.new(0, 400, 0, 500)
     Main.ZIndex = 1
     Main.Active = true
     
@@ -258,7 +203,7 @@ function library.new(library, name, theme)
     MainBorder.Name = "MainBorder"
     MainBorder.Parent = Main
     MainBorder.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainBorder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    MainBorder.BackgroundColor3 = config.MainColor
     MainBorder.BorderSizePixel = 0
     MainBorder.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainBorder.Size = UDim2.new(1, 6, 1, 6)
@@ -280,43 +225,47 @@ function library.new(library, name, theme)
     
     drag(Main)
     
-    -- Settings Button
-    SettingsBtn.Name = "SettingsBtn"
-    SettingsBtn.Parent = Main
-    SettingsBtn.BackgroundTransparency = 1
-    SettingsBtn.Position = UDim2.new(1, -30, 0, 5)
-    SettingsBtn.Size = UDim2.new(0, 25, 0, 25)
-    SettingsBtn.Image = "rbxassetid://3926305904"
-    SettingsBtn.ImageRectOffset = Vector2.new(124, 364)
-    SettingsBtn.ImageRectSize = Vector2.new(36, 36)
+    -- Minimize Button
+    MinimizeBtn.Name = "MinimizeBtn"
+    MinimizeBtn.Parent = Main
+    MinimizeBtn.BackgroundTransparency = 1
+    MinimizeBtn.Position = UDim2.new(1, -30, 0, 5)
+    MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+    MinimizeBtn.Image = "rbxassetid://3926305904"
+    MinimizeBtn.ImageRectOffset = Vector2.new(284, 4)
+    MinimizeBtn.ImageRectSize = Vector2.new(24, 24)
+    MinimizeBtn.ImageColor3 = config.TextColor
     
-    -- Search Box
-    SearchBox.Name = "SearchBox"
-    SearchBox.Parent = Main
-    SearchBox.BackgroundColor3 = config.TabColor
-    SearchBox.Position = UDim2.new(0.22, 10, 0, 5)
-    SearchBox.Size = UDim2.new(0.77, -45, 0, 30)
-    SearchBox.Font = Enum.Font.Gotham
-    SearchBox.PlaceholderText = "Search..."
-    SearchBox.Text = ""
-    SearchBox.TextColor3 = config.TextColor
-    SearchBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
-    SearchBox.TextSize = 14
-    SearchBox.ClearTextOnFocus = false
+    -- Close Button
+    CloseBtn.Name = "CloseBtn"
+    CloseBtn.Parent = Main
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Position = UDim2.new(1, -60, 0, 5)
+    CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+    CloseBtn.Image = "rbxassetid://3926305904"
+    CloseBtn.ImageRectOffset = Vector2.new(284, 4)
+    CloseBtn.ImageRectSize = Vector2.new(24, 24)
+    CloseBtn.ImageColor3 = config.TextColor
     
-    SearchBoxC.CornerRadius = UDim.new(0, 6)
-    SearchBoxC.Name = "SearchBoxC"
-    SearchBoxC.Parent = SearchBox
+    -- Welcome UI
+    WelcomeUI.Name = "WelcomeUI"
+    WelcomeUI.Parent = Main
+    WelcomeUI.BackgroundColor3 = config.Bg_Color
+    WelcomeUI.Position = UDim2.new(1, 10, 0, 10)
+    WelcomeUI.Size = UDim2.new(0, 200, 0, 50)
+    WelcomeUI.Visible = false
     
-    SearchIcon.Name = "SearchIcon"
-    SearchIcon.Parent = SearchBox
-    SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Position = UDim2.new(0, 5, 0, 5)
-    SearchIcon.Size = UDim2.new(0, 20, 0, 20)
-    SearchIcon.Image = "rbxassetid://3926305904"
-    SearchIcon.ImageRectOffset = Vector2.new(964, 324)
-    SearchIcon.ImageRectSize = Vector2.new(36, 36)
-    SearchIcon.ImageColor3 = Color3.fromRGB(180, 180, 180)
+    WelcomeText.Name = "WelcomeText"
+    WelcomeText.Parent = WelcomeUI
+    WelcomeText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    WelcomeText.BackgroundTransparency = 1.000
+    WelcomeText.Position = UDim2.new(0, 10, 0, 10)
+    WelcomeText.Size = UDim2.new(0, 180, 0, 30)
+    WelcomeText.Font = Enum.Font.GothamBold
+    WelcomeText.Text = "欢迎使用NE HUB付费版本"
+    WelcomeText.TextColor3 = config.AccentColor
+    WelcomeText.TextSize = 16.000
+    WelcomeText.TextXAlignment = Enum.TextXAlignment.Left
     
     -- Tab Main Area
     TabMain.Name = "TabMain"
@@ -331,7 +280,7 @@ function library.new(library, name, theme)
     SB.Parent = Main
     SB.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SB.BorderColor3 = config.MainColor
-    SB.Size = UDim2.new(0, 8, 0, library.settings.size.height)
+    SB.Size = UDim2.new(0, 8, 0, 500)
     
     SBC.CornerRadius = UDim.new(0, 6)
     SBC.Name = "SBC"
@@ -344,11 +293,11 @@ function library.new(library, name, theme)
     Side.BorderSizePixel = 0
     Side.ClipsDescendants = true
     Side.Position = UDim2.new(1, 0, 0, 0)
-    Side.Size = UDim2.new(0, 110, 0, library.settings.size.height)
+    Side.Size = UDim2.new(0, 110, 0, 500)
     
     SideG.Color = ColorSequence.new({ 
-        ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
-        ColorSequenceKeypoint.new(1.00, config.Zy_Color) 
+        ColorSequenceKeypoint.new(0.00, config.Bg_Color), 
+        ColorSequenceKeypoint.new(1.00, config.Bg_Color) 
     })
     SideG.Rotation = 90
     SideG.Name = "SideG"
@@ -361,7 +310,7 @@ function library.new(library, name, theme)
     TabBtns.BackgroundTransparency = 1.000
     TabBtns.BorderSizePixel = 0
     TabBtns.Position = UDim2.new(0, 0, 0.0973535776, 0)
-    TabBtns.Size = UDim2.new(0, 110, 0, library.settings.size.height - 40)
+    TabBtns.Size = UDim2.new(0, 110, 0, 500 - 40)
     TabBtns.CanvasSize = UDim2.new(0, 0, 1, 0)
     TabBtns.ScrollBarThickness = 0
     
@@ -384,8 +333,8 @@ function library.new(library, name, theme)
     ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     SBG.Color = ColorSequence.new({ 
-        ColorSequenceKeypoint.new(0.00, config.Zy_Color), 
-        ColorSequenceKeypoint.new(1.00, config.Zy_Color) 
+        ColorSequenceKeypoint.new(0.00, config.Bg_Color), 
+        ColorSequenceKeypoint.new(1.00, config.Bg_Color) 
     })
     SBG.Rotation = 90
     SBG.Name = "SBG"
@@ -395,348 +344,21 @@ function library.new(library, name, theme)
         TabBtns.CanvasSize = UDim2.new(0, 0, 0, TabBtnsL.AbsoluteContentSize.Y + 18)
     end)
 
-    -- Settings Panel
-    local SettingsPanel = Instance.new("Frame")
-    local SettingsPanelC = Instance.new("UICorner")
-    local SettingsTitle = Instance.new("TextLabel")
-    local CloseSettings = Instance.new("ImageButton")
-    local ThemeDropdown = Instance.new("TextButton")
-    local ThemeDropdownC = Instance.new("UICorner")
-    local ThemeLabel = Instance.new("TextLabel")
-    local SizeSlider = Instance.new("Frame")
-    local SizeLabel = Instance.new("TextLabel")
-    local WidthSlider = Instance.new("TextButton")
-    local WidthSliderC = Instance.new("UICorner")
-    local HeightSlider = Instance.new("TextButton")
-    local HeightSliderC = Instance.new("UICorner")
-    local WidthValue = Instance.new("TextBox")
-    local HeightValue = Instance.new("TextBox")
-    local AccentColorPicker = Instance.new("TextButton")
-    local AccentColorPickerC = Instance.new("UICorner")
-    local AccentColorLabel = Instance.new("TextLabel")
-    
-    SettingsPanel.Name = "SettingsPanel"
-    SettingsPanel.Parent = Main
-    SettingsPanel.BackgroundColor3 = config.TabColor
-    SettingsPanel.Position = UDim2.new(0.5, -150, 0.5, -100)
-    SettingsPanel.Size = UDim2.new(0, 300, 0, 200)
-    SettingsPanel.Visible = false
-    SettingsPanel.ZIndex = 10
-    
-    SettingsPanelC.CornerRadius = UDim.new(0, 8)
-    SettingsPanelC.Name = "SettingsPanelC"
-    SettingsPanelC.Parent = SettingsPanel
-    
-    SettingsTitle.Name = "SettingsTitle"
-    SettingsTitle.Parent = SettingsPanel
-    SettingsTitle.BackgroundTransparency = 1
-    SettingsTitle.Position = UDim2.new(0, 10, 0, 10)
-    SettingsTitle.Size = UDim2.new(0, 200, 0, 20)
-    SettingsTitle.Font = Enum.Font.GothamBold
-    SettingsTitle.Text = "UI Settings"
-    SettingsTitle.TextColor3 = config.TextColor
-    SettingsTitle.TextSize = 16
-    SettingsTitle.TextXAlignment = Enum.TextXAlignment.Left
-    
-    CloseSettings.Name = "CloseSettings"
-    CloseSettings.Parent = SettingsPanel
-    CloseSettings.BackgroundTransparency = 1
-    CloseSettings.Position = UDim2.new(1, -30, 0, 10)
-    CloseSettings.Size = UDim2.new(0, 20, 0, 20)
-    CloseSettings.Image = "rbxassetid://3926305904"
-    CloseSettings.ImageRectOffset = Vector2.new(284, 4)
-    CloseSettings.ImageRectSize = Vector2.new(24, 24)
-    CloseSettings.ImageColor3 = config.TextColor
-    
-    ThemeLabel.Name = "ThemeLabel"
-    ThemeLabel.Parent = SettingsPanel
-    ThemeLabel.BackgroundTransparency = 1
-    ThemeLabel.Position = UDim2.new(0, 10, 0, 40)
-    ThemeLabel.Size = UDim2.new(0, 100, 0, 20)
-    ThemeLabel.Font = Enum.Font.Gotham
-    ThemeLabel.Text = "Theme:"
-    ThemeLabel.TextColor3 = config.TextColor
-    ThemeLabel.TextSize = 14
-    ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    ThemeDropdown.Name = "ThemeDropdown"
-    ThemeDropdown.Parent = SettingsPanel
-    ThemeDropdown.BackgroundColor3 = config.Bg_Color
-    ThemeDropdown.Position = UDim2.new(0, 120, 0, 40)
-    ThemeDropdown.Size = UDim2.new(0, 170, 0, 25)
-    ThemeDropdown.Font = Enum.Font.Gotham
-    ThemeDropdown.Text = library.settings.theme
-    ThemeDropdown.TextColor3 = config.TextColor
-    ThemeDropdown.TextSize = 14
-    
-    ThemeDropdownC.CornerRadius = UDim.new(0, 6)
-    ThemeDropdownC.Name = "ThemeDropdownC"
-    ThemeDropdownC.Parent = ThemeDropdown
-    
-    SizeLabel.Name = "SizeLabel"
-    SizeLabel.Parent = SettingsPanel
-    SizeLabel.BackgroundTransparency = 1
-    SizeLabel.Position = UDim2.new(0, 10, 0, 80)
-    SizeLabel.Size = UDim2.new(0, 100, 0, 20)
-    SizeLabel.Font = Enum.Font.Gotham
-    SizeLabel.Text = "UI Size:"
-    SizeLabel.TextColor3 = config.TextColor
-    SizeLabel.TextSize = 14
-    SizeLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    WidthSlider.Name = "WidthSlider"
-    WidthSlider.Parent = SettingsPanel
-    WidthSlider.BackgroundColor3 = config.Bg_Color
-    WidthSlider.Position = UDim2.new(0, 120, 0, 80)
-    WidthSlider.Size = UDim2.new(0, 100, 0, 25)
-    WidthSlider.Font = Enum.Font.Gotham
-    WidthSlider.Text = "Width"
-    WidthSlider.TextColor3 = config.TextColor
-    WidthSlider.TextSize = 14
-    
-    WidthSliderC.CornerRadius = UDim.new(0, 6)
-    WidthSliderC.Name = "WidthSliderC"
-    WidthSliderC.Parent = WidthSlider
-    
-    WidthValue.Name = "WidthValue"
-    WidthValue.Parent = WidthSlider
-    WidthValue.BackgroundTransparency = 1
-    WidthValue.Position = UDim2.new(0, 0, 0, 0)
-    WidthValue.Size = UDim2.new(1, 0, 1, 0)
-    WidthValue.Font = Enum.Font.Gotham
-    WidthValue.Text = tostring(library.settings.size.width)
-    WidthValue.TextColor3 = config.TextColor
-    WidthValue.TextSize = 14
-    
-    HeightSlider.Name = "HeightSlider"
-    HeightSlider.Parent = SettingsPanel
-    HeightSlider.BackgroundColor3 = config.Bg_Color
-    HeightSlider.Position = UDim2.new(0, 230, 0, 80)
-    HeightSlider.Size = UDim2.new(0, 60, 0, 25)
-    HeightSlider.Font = Enum.Font.Gotham
-    HeightSlider.Text = "Height"
-    HeightSlider.TextColor3 = config.TextColor
-    HeightSlider.TextSize = 14
-    
-    HeightSliderC.CornerRadius = UDim.new(0, 6)
-    HeightSliderC.Name = "HeightSliderC"
-    HeightSliderC.Parent = HeightSlider
-    
-    HeightValue.Name = "HeightValue"
-    HeightValue.Parent = HeightSlider
-    HeightValue.BackgroundTransparency = 1
-    HeightValue.Position = UDim2.new(0, 0, 0, 0)
-    HeightValue.Size = UDim2.new(1, 0, 1, 0)
-    HeightValue.Font = Enum.Font.Gotham
-    HeightValue.Text = tostring(library.settings.size.height)
-    HeightValue.TextColor3 = config.TextColor
-    HeightValue.TextSize = 14
-    
-    AccentColorLabel.Name = "AccentColorLabel"
-    AccentColorLabel.Parent = SettingsPanel
-    AccentColorLabel.BackgroundTransparency = 1
-    AccentColorLabel.Position = UDim2.new(0, 10, 0, 120)
-    AccentColorLabel.Size = UDim2.new(0, 100, 0, 20)
-    AccentColorLabel.Font = Enum.Font.Gotham
-    AccentColorLabel.Text = "Accent Color:"
-    AccentColorLabel.TextColor3 = config.TextColor
-    AccentColorLabel.TextSize = 14
-    AccentColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    AccentColorPicker.Name = "AccentColorPicker"
-    AccentColorPicker.Parent = SettingsPanel
-    AccentColorPicker.BackgroundColor3 = config.AccentColor
-    AccentColorPicker.Position = UDim2.new(0, 120, 0, 120)
-    AccentColorPicker.Size = UDim2.new(0, 170, 0, 25)
-    AccentColorPicker.Font = Enum.Font.Gotham
-    AccentColorPicker.Text = "Pick Color"
-    AccentColorPicker.TextColor3 = Color3.fromRGB(255, 255, 255)
-    AccentColorPicker.TextSize = 14
-    
-    AccentColorPickerC.CornerRadius = UDim.new(0, 6)
-    AccentColorPickerC.Name = "AccentColorPickerC"
-    AccentColorPickerC.Parent = AccentColorPicker
-    
-    -- Settings functionality
-    SettingsBtn.MouseButton1Click:Connect(function()
-        SettingsPanel.Visible = not SettingsPanel.Visible
+    -- Minimize and Close Button Functionality
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        Main.Visible = false
+        WelcomeUI.Visible = true
     end)
     
-    CloseSettings.MouseButton1Click:Connect(function()
-        SettingsPanel.Visible = false
+    CloseBtn.MouseButton1Click:Connect(function()
+        UiDestroy()
     end)
     
-    ThemeDropdown.MouseButton1Click:Connect(function()
-        local themes = {"Dark", "Light", "Cyber"}
-        local currentIndex = table.find(themes, library.settings.theme) or 1
-        local nextIndex = currentIndex % #themes + 1
-        library.settings.theme = themes[nextIndex]
-        ThemeDropdown.Text = library.settings.theme
-        applyTheme(library.settings.theme)
+    WelcomeUI.MouseButton1Click:Connect(function()
+        Main.Visible = true
+        WelcomeUI.Visible = false
     end)
     
-    WidthValue.FocusLost:Connect(function()
-        local width = tonumber(WidthValue.Text)
-        if width and width >= 400 and width <= 1000 then
-            library.settings.size.width = width
-            Main.Size = UDim2.new(0, width, 0, library.settings.size.height)
-        else
-            WidthValue.Text = tostring(library.settings.size.width)
-        end
-    end)
-    
-    HeightValue.FocusLost:Connect(function()
-        local height = tonumber(HeightValue.Text)
-        if height and height >= 300 and height <= 800 then
-            library.settings.size.height = height
-            Main.Size = UDim2.new(0, library.settings.size.width, 0, height)
-        else
-            HeightValue.Text = tostring(library.settings.size.height)
-        end
-    end)
-    
-    AccentColorPicker.MouseButton1Click:Connect(function()
-        local colorPicker = Instance.new("TextButton")
-        colorPicker.Name = "ColorPicker"
-        colorPicker.Parent = Main
-        colorPicker.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        colorPicker.BorderSizePixel = 0
-        colorPicker.Position = UDim2.new(0.5, -100, 0.5, -100)
-        colorPicker.Size = UDim2.new(0, 200, 0, 200)
-        colorPicker.ZIndex = 20
-        colorPicker.Text = ""
-        
-        local colorWheel = Instance.new("ImageLabel")
-        colorWheel.Parent = colorPicker
-        colorWheel.BackgroundTransparency = 1
-        colorWheel.Size = UDim2.new(1, 0, 1, 0)
-        colorWheel.Image = "rbxassetid://2615689005"
-        colorWheel.ZIndex = 21
-        
-        local closePicker = function()
-            colorPicker:Destroy()
-        end
-        
-        colorWheel.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                local x = (input.Position.X - colorWheel.AbsolutePosition.X) / colorWheel.AbsoluteSize.X
-                local y = (input.Position.Y - colorWheel.AbsolutePosition.Y) / colorWheel.AbsoluteSize.Y
-                
-                if x >= 0 and x <= 1 and y >= 0 and y <= 1 then
-                    local h = (1 - y) * 360
-                    local s = x
-                    local v = 1
-                    local color = Color3.fromHSV(h/360, s, v)
-                    
-                    library.settings.colors[library.settings.theme].AccentColor = color
-                    AccentColorPicker.BackgroundColor3 = color
-                    ScriptTitle.TextColor3 = color
-                    -- Update other accent color elements here
-                end
-            elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-                closePicker()
-            end
-        end)
-        
-        services.UserInputService.InputBegan:Connect(function(input, processed)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 and not processed then
-                if not colorPicker:IsDescendantOf(game) then return end
-                if not (input.Position.X >= colorPicker.AbsolutePosition.X and 
-                       input.Position.X <= colorPicker.AbsolutePosition.X + colorPicker.AbsoluteSize.X and
-                       input.Position.Y >= colorPicker.AbsolutePosition.Y and 
-                       input.Position.Y <= colorPicker.AbsolutePosition.Y + colorPicker.AbsoluteSize.Y) then
-                    closePicker()
-                end
-            end
-        end)
-    end)
-
-    -- Search functionality
-    local function filterElements(searchText)
-        if not searchText or searchText == "" then
-            -- Show all elements
-            for _, tab in pairs(TabMain:GetChildren()) do
-                if tab:IsA("ScrollingFrame") then
-                    for _, section in pairs(tab:GetChildren()) do
-                        if section:IsA("Frame") and section.Name == "Section" then
-                            section.Visible = true
-                            for _, element in pairs(section.Objs:GetChildren()) do
-                                if element:IsA("Frame") then
-                                    element.Visible = true
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            return
-        end
-        
-        searchText = searchText:lower()
-        
-        for _, tab in pairs(TabMain:GetChildren()) do
-            if tab:IsA("ScrollingFrame") then
-                for _, section in pairs(tab:GetChildren()) do
-                    if section:IsA("Frame") and section.Name == "Section" then
-                        local sectionMatch = false
-                        local sectionText = section.SectionText.Text:lower()
-                        
-                        if sectionText:find(searchText) then
-                            sectionMatch = true
-                        end
-                        
-                        local elementMatch = false
-                        for _, element in pairs(section.Objs:GetChildren()) do
-                            if element:IsA("Frame") then
-                                local elementText = ""
-                                if element:FindFirstChild("Btn") then
-                                    elementText = element.Btn.Text:lower()
-                                elseif element:FindFirstChild("ToggleBtn") then
-                                    elementText = element.ToggleBtn.Text:lower()
-                                elseif element:FindFirstChild("KeybindBtn") then
-                                    elementText = element.KeybindBtn.Text:lower()
-                                elseif element:FindFirstChild("TextboxBack") then
-                                    elementText = element.TextboxBack.Text:lower()
-                                elseif element:FindFirstChild("SliderBack") then
-                                    elementText = element.SliderBack.Text:lower()
-                                elseif element:FindFirstChild("DropdownTop") then
-                                    elementText = element.DropdownTop.Text:lower()
-                                elseif element:FindFirstChild("TextLabel") then
-                                    elementText = element.TextLabel.Text:lower()
-                                end
-                                
-                                if elementText:find(searchText) then
-                                    element.Visible = true
-                                    elementMatch = true
-                                    sectionMatch = true
-                                else
-                                    element.Visible = false
-                                end
-                            end
-                        end
-                        
-                        section.Visible = sectionMatch
-                        if sectionMatch then
-                            section.Size = UDim2.new(0.981000006, 0, 0, 36 + section.ObjsL.AbsoluteContentSize.Y + 8)
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-        filterElements(SearchBox.Text)
-    end)
-
-    SearchBox.Focused:Connect(function()
-        SearchIcon.ImageColor3 = config.AccentColor
-    end)
-
-    SearchBox.FocusLost:Connect(function()
-        SearchIcon.ImageColor3 = Color3.fromRGB(180, 180, 180)
-    end)
-
     local window = {}
     
     function window.Tab(window, name, icon)
@@ -823,7 +445,7 @@ function library.new(library, name, theme)
             
             Section.Name = "Section"
             Section.Parent = Tab
-            Section.BackgroundColor3 = config.TabColor
+            Section.BackgroundColor3 = config.Bg_Color
             Section.BackgroundTransparency = 1.000
             Section.BorderSizePixel = 0
             Section.ClipsDescendants = true
@@ -851,7 +473,7 @@ function library.new(library, name, theme)
             SectionOpen.BorderSizePixel = 0
             SectionOpen.Position = UDim2.new(0, -33, 0, 5)
             SectionOpen.Size = UDim2.new(0, 26, 0, 26)
-            SectionOpen.Image = "http://www.roblox.com/asset/?id=6031302934"
+            SectionOpen.Image = "rbxassetid://6031302934"
             SectionOpen.ImageColor3 = config.TextColor
             
             SectionOpened.Name = "SectionOpened"
@@ -859,7 +481,7 @@ function library.new(library, name, theme)
             SectionOpened.BackgroundTransparency = 1.000
             SectionOpened.BorderSizePixel = 0
             SectionOpened.Size = UDim2.new(0, 26, 0, 26)
-            SectionOpened.Image = "http://www.roblox.com/asset/?id=6031302932"
+            SectionOpened.Image = "rbxassetid://6031302932"
             SectionOpened.ImageTransparency = 1.000
             SectionOpened.ImageColor3 = config.TextColor
             
@@ -957,7 +579,7 @@ function library.new(library, name, theme)
                 LabelModule.Size = UDim2.new(0, 428, 0, 19)
                 
                 TextLabel.Parent = LabelModule
-                TextLabel.BackgroundColor3 = config.Label_Color
+                TextLabel.BackgroundColor3 = config.Bg_Color
                 TextLabel.Size = UDim2.new(0, 428, 0, 22)
                 TextLabel.Font = Enum.Font.GothamSemibold
                 TextLabel.Text = text
@@ -996,7 +618,7 @@ function library.new(library, name, theme)
                 
                 ToggleBtn.Name = "ToggleBtn"
                 ToggleBtn.Parent = ToggleModule
-                ToggleBtn.BackgroundColor3 = config.Toggle_Color
+                ToggleBtn.BackgroundColor3 = config.Bg_Color
                 ToggleBtn.BorderSizePixel = 0
                 ToggleBtn.Size = UDim2.new(0, 428, 0, 38)
                 ToggleBtn.AutoButtonColor = false
@@ -1110,7 +732,7 @@ function library.new(library, name, theme)
                 
                 KeybindBtn.Name = "KeybindBtn"
                 KeybindBtn.Parent = KeybindModule
-                KeybindBtn.BackgroundColor3 = config.Keybind_Color
+                KeybindBtn.BackgroundColor3 = config.Bg_Color
                 KeybindBtn.BorderSizePixel = 0
                 KeybindBtn.Size = UDim2.new(0, 428, 0, 38)
                 KeybindBtn.AutoButtonColor = false
@@ -1213,7 +835,7 @@ function library.new(library, name, theme)
                 
                 TextboxBack.Name = "TextboxBack"
                 TextboxBack.Parent = TextboxModule
-                TextboxBack.BackgroundColor3 = config.Textbox_Color
+                TextboxBack.BackgroundColor3 = config.Bg_Color
                 TextboxBack.BorderSizePixel = 0
                 TextboxBack.Size = UDim2.new(0, 428, 0, 38)
                 TextboxBack.AutoButtonColor = false
@@ -1372,7 +994,7 @@ function library.new(library, name, theme)
                 SliderValue.BorderSizePixel = 0
                 SliderValue.Size = UDim2.new(1, 0, 1, 0)
                 SliderValue.Font = Enum.Font.Gotham
-                SliderValue.Text = "1000"
+                SliderValue.Text = tostring(default)
                 SliderValue.TextColor3 = config.TextColor
                 SliderValue.TextSize = 14.000
                 
@@ -1650,7 +1272,7 @@ function library.new(library, name, theme)
                     
                     Option.Name = "Option_" .. option
                     Option.Parent = DropdownModule
-                    Option.BackgroundColor3 = config.TabColor
+                    Option.BackgroundColor3 = config.Bg_Color
                     Option.BorderSizePixel = 0
                     Option.Position = UDim2.new(0, 0, 0.328125, 0)
                     Option.Size = UDim2.new(0, 428, 0, 26)
