@@ -9,9 +9,10 @@ local TOGGLE_ON_POS = UDim2.new(0, 16, 0, 1.5)
 local TOGGLE_OFF_POS = UDim2.new(0, 2, 0, 1.5)
 local TOGGLE_ACTIVE_COLOR = Color3.fromRGB(0, 200, 255)
 local TOGGLE_INACTIVE_COLOR = Color3.fromRGB(255, 255, 255)
-local SECTION_BORDER_COLOR = Color3.fromRGB(20, 60, 100)
-local COMPONENT_BG_COLOR = Color3.fromRGB(40, 80, 120)
-local SECTION_BG_COLOR = Color3.fromRGB(30, 70, 110)
+local SECTION_BORDER_COLOR = Color3.fromRGB(50, 50, 50)
+local COMPONENT_BG_COLOR = Color3.fromRGB(30, 30, 40)
+local SECTION_BG_COLOR = Color3.fromRGB(25, 25, 35)
+local MAIN_BG_COLOR = Color3.fromRGB(20, 20, 30) -- 主窗口背景颜色
 
 local function isMobile()
     return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
@@ -57,9 +58,9 @@ function SansHubLib:CreateWindow(name, version)
     screenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
     local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 450, 0, 350)
+    mainFrame.Size = UDim2.new(0, 450, 0, 350) -- 扩大UI
     mainFrame.Position = UDim2.new(0.5, -225, 0.5, -175)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 60, 120)
+    mainFrame.BackgroundColor3 = MAIN_BG_COLOR
     mainFrame.BackgroundTransparency = 0
     mainFrame.BorderSizePixel = 0
     mainFrame.Active = true
@@ -69,6 +70,16 @@ function SansHubLib:CreateWindow(name, version)
 
     createCorner(mainFrame, 15)
     createStroke(mainFrame)
+
+    -- 添加背景渐变
+    local gradient = Instance.new("UIGradient")
+    gradient.Rotation = 90
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 50, 100)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 100, 150)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 150, 200))
+    }
+    gradient.Parent = mainFrame
 
     local titleBar = Instance.new("Frame")
     titleBar.Size = UDim2.new(1, 0, 0, 50)
@@ -117,7 +128,7 @@ function SansHubLib:CreateWindow(name, version)
     minimizeButton.Position = UDim2.new(1, -65, 0, 10)
     minimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     minimizeButton.BackgroundTransparency = 0
-    minimizeButton.Text = "缩小"
+    minimizeButton.Text = "—"
     minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     minimizeButton.TextSize = 16
     minimizeButton.Font = Enum.Font.GothamBold
@@ -132,7 +143,7 @@ function SansHubLib:CreateWindow(name, version)
     closeButton.Position = UDim2.new(1, -35, 0, 10)
     closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     closeButton.BackgroundTransparency = 0
-    closeButton.Text = "关闭"
+    closeButton.Text = "×"
     closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     closeButton.TextSize = 16
     closeButton.Font = Enum.Font.GothamBold
@@ -227,7 +238,7 @@ function SansHubLib:CreateWindow(name, version)
     minimizeButton.MouseButton1Click:Connect(function()
         task.wait(0.1)
         if not isMinimized then
-            smoothTween(mainFrame, {Position = UDim2.new(0.5, -175, 1.5, 0)}, 0.3)
+            smoothTween(mainFrame, {Position = UDim2.new(0.5, -225, 1.5, 0)}, 0.3)
             task.wait(0.3)
             mainFrame.Visible = false
             restoreButton.Visible = true
@@ -235,7 +246,7 @@ function SansHubLib:CreateWindow(name, version)
             isMinimized = true
         else
             mainFrame.Visible = true
-            smoothTween(mainFrame, {Position = UDim2.new(0.5, -175, 0.5, -125)}, 0.3)
+            smoothTween(mainFrame, {Position = UDim2.new(0.5, -225, 0.5, -175)}, 0.3)
             restoreButton.Visible = false
             minimizeButton.Text = "—"
             isMinimized = false
@@ -245,7 +256,7 @@ function SansHubLib:CreateWindow(name, version)
     restoreButton.MouseButton1Click:Connect(function()
         task.wait(0.1)
         mainFrame.Visible = true
-        smoothTween(mainFrame, {Position = UDim2.new(0.5, -175, 0.5, -125)}, 0.3)
+        smoothTween(mainFrame, {Position = UDim2.new(0.5, -225, 0.5, -175)}, 0.3)
         restoreButton.Visible = false
         minimizeButton.Text = "—"
         isMinimized = false
@@ -299,9 +310,9 @@ function SansHubLib:CreateWindow(name, version)
         cancelButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         cancelButton.Text = "取消"
         cancelButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        cancelButton.TextSize = 14
-        cancelButton.Font = Enum.Font.Gotham
-        cancelButton.Parent = confirmFrame
+        cancelButtonTitle.TextSize = 14
+        cancelButtonTitle.Font = Enum.Font.Gotham
+        cancelButtonTitle.Parent = confirmFrame
         createCorner(cancelButton, 8)
         createStroke(cancelButton)
 
@@ -314,7 +325,7 @@ function SansHubLib:CreateWindow(name, version)
             screenGui:Destroy()
         end)
 
-        cancelButton.MouseButton1Click:Connect(function()
+        cancelButtonTitle.MouseButton1Click:Connect(function()
             smoothTween(confirmFrame, {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.2)
             task.wait(0.2)
             confirmFrame:Destroy()
@@ -505,7 +516,7 @@ function SansHubLib:CreateWindow(name, version)
             createCorner(button, 6)
 
             button.MouseButton1Click:Connect(function()
-                smoothTween(button, {Size = UDim2.new(0.5, -225, 0.5, 175)}, 0.3)
+                smoothTween(button, {Size = UDim2.new(1, -25, 0, 18)}, 0.1)
                 smoothTween(button, {Size = UDim2.new(1, -20, 0, 20)}, 0.1)
                 if callback then callback() end
             end)
@@ -1604,7 +1615,7 @@ function SansHubLib:CreateWindow(name, version)
         return tabFunctions
     end
 
-    smoothTween(mainFrame, {Position = UDim2.new(0.5, -175, 0.5, -125)}, 0.5)
+    smoothTween(mainFrame, {Position = UDim2.new(0.5, -225, 0.5, -175)}, 0.5)
 
     return tabs
 end
