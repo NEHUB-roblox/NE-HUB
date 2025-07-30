@@ -1,4 +1,3 @@
--- 等待游戏加载完成
 repeat
 	task.wait()
 until game:IsLoaded()
@@ -14,7 +13,6 @@ local services = setmetatable({}, {
 })
 local mouse = services.Players.LocalPlayer:GetMouse()
 
--- 动态效果函数
 function Tween(obj, t, data)
 	services.TweenService
 		:Create(obj, TweenInfo.new(t[1], Enum.EasingStyle[t[2]], Enum.EasingDirection[t[3]]), data)
@@ -22,7 +20,6 @@ function Tween(obj, t, data)
 	return true
 end
 
--- 点击效果函数
 function Ripple(obj)
 	spawn(function()
 		if obj.ClipsDescendants ~= true then
@@ -56,8 +53,13 @@ function Ripple(obj)
 	end)
 end
 
--- 切换标签页函数
+local toggled = false
+local switchingTabs = false
+
 function switchTab(new)
+	if switchingTabs then
+		return
+	end
 	local old = library.currentTab
 	if old == nil then
 		new[2].Visible = true
@@ -69,6 +71,7 @@ function switchTab(new)
 	if old[1] == new[1] then
 		return
 	end
+	switchingTabs = true
 	library.currentTab = new
 	services.TweenService:Create(old[1], TweenInfo.new(0.1), { ImageTransparency = 0.2 }):Play()
 	services.TweenService:Create(new[1], TweenInfo.new(0.1), { ImageTransparency = 0 }):Play()
@@ -76,9 +79,47 @@ function switchTab(new)
 	services.TweenService:Create(new[1].TabText, TweenInfo.new(0.1), { TextTransparency = 0 }):Play()
 	old[2].Visible = false
 	new[2].Visible = true
+	task.wait(0.1)
+	switchingTabs = false
 end
 
--- 创建UI库函数
+function drag(frame, hold)
+	if not hold then
+		hold = frame
+	end
+	local dragging
+	local dragInput
+	local dragStart
+	local startPos
+	local function update(input)
+		local delta = input.Position - dragStart
+		frame.Position =
+			UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+	hold.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	frame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement then
+			dragInput = input
+		end
+	end)
+	services.UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+end
+
 function library.new(library, name, theme)
 	for _, v in next, services.CoreGui:GetChildren() do
 		if v.Name == "AL V3 -- Make 123fa98" then
@@ -87,23 +128,23 @@ function library.new(library, name, theme)
 	end
 
 	local config = {
-		MainColor = Color3.fromRGB(16, 16, 16),
-		TabColor = Color3.fromRGB(22, 22, 22),
-		Bg_Color = Color3.fromRGB(17, 17, 17),
-		Zy_Color = Color3.fromRGB(17, 17, 17), -- 主要颜色
+		MainColor = Color3.fromRGB(30, 30, 30), -- 主色调
+		TabColor = Color3.fromRGB(40, 40, 40), -- 标签颜色
+		Bg_Color = Color3.fromRGB(25, 25, 25), -- 背景颜色
+		Zy_Color = Color3.fromRGB(50, 50, 50), -- 边框颜色
 
-		Button_Color = Color3.fromRGB(22, 22, 22),
-		Textbox_Color = Color3.fromRGB(22, 22, 22),
-		Dropdown_Color = Color3.fromRGB(22, 22, 22),
-		Keybind_Color = Color3.fromRGB(22, 22, 22),
-		Label_Color = Color3.fromRGB(22, 22, 22),
+		Button_Color = Color3.fromRGB(60, 60, 60), -- 按钮颜色
+		Textbox_Color = Color3.fromRGB(60, 60, 60), -- 文本框颜色
+		Dropdown_Color = Color3.fromRGB(60, 60, 60), -- 下拉框颜色
+		Keybind_Color = Color3.fromRGB(60, 60, 60), -- 快捷键颜色
+		Label_Color = Color3.fromRGB(60, 60, 60), -- 标签颜色
 
-		Slider_Color = Color3.fromRGB(22, 22, 22),
-		SliderBar_Color = Color3.fromRGB(37, 254, 152),
+		Slider_Color = Color3.fromRGB(60, 60, 60), -- 滑条颜色
+		SliderBar_Color = Color3.fromRGB(0, 255, 255), -- 滑条进度颜色
 
-		Toggle_Color = Color3.fromRGB(22, 22, 22),
-		Toggle_Off = Color3.fromRGB(34, 34, 34),
-		Toggle_On = Color3.fromRGB(37, 254, 152),
+		Toggle_Color = Color3.fromRGB(60, 60, 60), -- 开关颜色
+		Toggle_Off = Color3.fromRGB(100, 100, 100), -- 开关关闭颜色
+		Toggle_On = Color3.fromRGB(0, 255, 255), -- 开关开启颜色
 	}
 
 	local dogent = Instance.new("ScreenGui")
@@ -129,11 +170,9 @@ function library.new(library, name, theme)
 	end
 	dogent.Name = "AL V3 -- Make 123fa98"
 	dogent.Parent = services.CoreGui
-
 	function UiDestroy()
 		dogent:Destroy()
 	end
-
 	function ToggleUILib()
 		if not ToggleUI then
 			dogent.Enabled = false
@@ -143,7 +182,6 @@ function library.new(library, name, theme)
 			dogent.Enabled = true
 		end
 	end
-
 	Main.Name = "Main"
 	Main.Parent = dogent
 	Main.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -154,6 +192,11 @@ function library.new(library, name, theme)
 	Main.ZIndex = 1
 	Main.Active = true
 	Main.Draggable = true
+	services.UserInputService.InputEnded:Connect(function(input)
+		if input.KeyCode == Enum.KeyCode.LeftControl then
+			Main.Visible = not Main.Visible
+		end
+	end)
 
 	local Open = Instance.new("ImageButton")
 	local UICorner = Instance.new("UICorner")
@@ -167,16 +210,16 @@ function library.new(library, name, theme)
 	Open.Active = true
 	Open.Draggable = true
 	Open.Image = "rbxassetid://93774288685915"
-
-	UICorner.Parent = Open
-
+	
 	Open.MouseButton1Click:Connect(function()
 		Main.Visible = not Main.Visible
 	end)
 
+	UICorner.Parent = Open
+
+	drag(Main)
 	UICornerMain.Parent = Main
 	UICornerMain.CornerRadius = UDim.new(0, 10) -- 增大圆角
-
 	DropShadowHolder.Name = "DropShadowHolder"
 	DropShadowHolder.Parent = Main
 	DropShadowHolder.BackgroundTransparency = 1.000
@@ -186,29 +229,31 @@ function library.new(library, name, theme)
 	DropShadowHolder.ZIndex = 0
 
 	function toggleui()
+		toggled = not toggled
+		spawn(function()
+			if toggled then
+				wait(0.3)
+			end
+		end)
 		Tween(Main, { 0.3, "Sine", "InOut" }, { Size = UDim2.new(0, 600, 0, (toggled and 400 or 0)) })
 	end
-
 	TabMain.Name = "TabMain"
 	TabMain.Parent = Main
 	TabMain.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	TabMain.BackgroundTransparency = 1.000
 	TabMain.Position = UDim2.new(0.217000037, 0, 0, 3)
 	TabMain.Size = UDim2.new(0, 448, 0, 350)
-
 	MainC.CornerRadius = UDim.new(0, 10) -- 增大圆角
 	MainC.Name = "MainC"
 	MainC.Parent = Main
-
 	SB.Name = "SB"
 	SB.Parent = Main
 	SB.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	SB.BorderColor3 = config.MainColor
-	SB.Size = UDim2.new(0, 8, 0, 400) -- 增大UI尺寸
+	SB.Size = UDim2.new(0, 8, 0, 353)
 	SBC.CornerRadius = UDim.new(0, 10) -- 增大圆角
 	SBC.Name = "SBC"
 	SBC.Parent = SB
-
 	Side.Name = "Side"
 	Side.Parent = SB
 	Side.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -216,14 +261,12 @@ function library.new(library, name, theme)
 	Side.BorderSizePixel = 0
 	Side.ClipsDescendants = true
 	Side.Position = UDim2.new(1, 0, 0, 0)
-	Side.Size = UDim2.new(0, 110, 0, 400) -- 增大UI尺寸
-
+	Side.Size = UDim2.new(0, 110, 0, 353)
 	SideG.Color =
 		ColorSequence.new({ ColorSequenceKeypoint.new(0.00, config.Zy_Color), ColorSequenceKeypoint.new(1.00, config.Zy_Color) })
 	SideG.Rotation = 90
 	SideG.Name = "SideG"
 	SideG.Parent = Side
-
 	TabBtns.Name = "TabBtns"
 	TabBtns.Parent = Side
 	TabBtns.Active = true
@@ -234,12 +277,10 @@ function library.new(library, name, theme)
 	TabBtns.Size = UDim2.new(0, 110, 0, 318)
 	TabBtns.CanvasSize = UDim2.new(0, 0, 1, 0)
 	TabBtns.ScrollBarThickness = 0
-
 	TabBtnsL.Name = "TabBtnsL"
 	TabBtnsL.Parent = TabBtns
 	TabBtnsL.SortOrder = Enum.SortOrder.LayoutOrder
 	TabBtnsL.Padding = UDim.new(0, 12)
-
 	ScriptTitle.Name = "ScriptTitle"
 	ScriptTitle.Parent = Side
 	ScriptTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -248,7 +289,7 @@ function library.new(library, name, theme)
 	ScriptTitle.Size = UDim2.new(0, 102, 0, 20)
 	ScriptTitle.Font = Enum.Font.GothamSemibold
 	ScriptTitle.Text = name
-	ScriptTitle.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+	ScriptTitle.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 	ScriptTitle.TextSize = 14.000
 	ScriptTitle.TextScaled = true
 	ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -258,50 +299,8 @@ function library.new(library, name, theme)
 	SBG.Rotation = 90
 	SBG.Name = "SBG"
 	SBG.Parent = SB
-
 	TabBtnsL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		TabBtns.CanvasSize = UDim2.new(0, 0, 0, TabBtnsL.AbsoluteContentSize.Y + 18)
-	end)
-
-	-- 添加搜索框
-	local SearchBox = Instance.new("TextBox")
-	SearchBox.Name = "SearchBox"
-	SearchBox.Parent = TabMain
-	SearchBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	SearchBox.BackgroundTransparency = 0.5
-	SearchBox.Position = UDim2.new(0, 10, 0, 10)
-	SearchBox.Size = UDim2.new(0, 300, 0, 30)
-	SearchBox.Font = Enum.Font.GothamSemibold
-	SearchBox.PlaceholderText = "搜索功能"
-	SearchBox.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
-	SearchBox.TextSize = 14.000
-	SearchBox.ClearTextOnFocus = false
-
-	-- 添加开关UI的按钮
-	local ToggleUIButton = Instance.new("TextButton")
-	ToggleUIButton.Name = "ToggleUIButton"
-	ToggleUIButton.Parent = Main
-	ToggleUIButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	ToggleUIButton.BackgroundTransparency = 0.5
-	ToggleUIButton.Position = UDim2.new(0.5, -75, 0, 10)
-	ToggleUIButton.Size = UDim2.new(0, 150, 0, 30)
-	ToggleUIButton.Font = Enum.Font.GothamSemibold
-	ToggleUIButton.Text = "开启"
-	ToggleUIButton.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
-	ToggleUIButton.TextSize = 14.000
-
-	local ToggleUIButtonC = Instance.new("UICorner")
-	ToggleUIButtonC.CornerRadius = UDim.new(0, 10) -- 增大圆角
-	ToggleUIButtonC.Parent = ToggleUIButton
-
-	ToggleUIButton.MouseButton1Click:Connect(function()
-		if Main.Visible then
-			Main.Visible = false
-			ToggleUIButton.Text = "关闭"
-		else
-			Main.Visible = true
-			ToggleUIButton.Text = "开启"
-		end
 	end)
 
 	local window = {}
@@ -319,7 +318,6 @@ function library.new(library, name, theme)
 		Tab.Size = UDim2.new(1, 0, 1, 0)
 		Tab.ScrollBarThickness = 2
 		Tab.Visible = false
-
 		TabIco.Name = "TabIco"
 		TabIco.Parent = TabBtns
 		TabIco.BackgroundTransparency = 1.000
@@ -327,7 +325,6 @@ function library.new(library, name, theme)
 		TabIco.Size = UDim2.new(0, 24, 0, 24)
 		TabIco.Image = ("rbxassetid://%s"):format((icon or 4370341699))
 		TabIco.ImageTransparency = 0.2
-
 		TabText.Name = "TabText"
 		TabText.Parent = TabIco
 		TabText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -336,11 +333,10 @@ function library.new(library, name, theme)
 		TabText.Size = UDim2.new(0, 76, 0, 24)
 		TabText.Font = Enum.Font.GothamSemibold
 		TabText.Text = name
-		TabText.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+		TabText.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 		TabText.TextSize = 14.000
 		TabText.TextXAlignment = Enum.TextXAlignment.Left
 		TabText.TextTransparency = 0.2
-
 		TabBtn.Name = "TabBtn"
 		TabBtn.Parent = TabIco
 		TabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -352,27 +348,22 @@ function library.new(library, name, theme)
 		TabBtn.Text = ""
 		TabBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 		TabBtn.TextSize = 14.000
-
 		TabL.Name = "TabL"
 		TabL.Parent = Tab
 		TabL.SortOrder = Enum.SortOrder.LayoutOrder
 		TabL.Padding = UDim.new(0, 4)
-
 		TabBtn.MouseButton1Click:Connect(function()
 			spawn(function()
 				Ripple(TabBtn)
 			end)
 			switchTab({ TabIco, Tab })
 		end)
-
 		if library.currentTab == nil then
 			switchTab({ TabIco, Tab })
 		end
-
 		TabL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 			Tab.CanvasSize = UDim2.new(0, 0, 0, TabL.AbsoluteContentSize.Y + 8)
 		end)
-
 		local tab = {}
 		function tab.section(tab, name, TabVal)
 			local Section = Instance.new("Frame")
@@ -390,10 +381,9 @@ function library.new(library, name, theme)
 			Section.BorderSizePixel = 0
 			Section.ClipsDescendants = true
 			Section.Size = UDim2.new(0.981000006, 0, 0, 36)
-			SectionC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+			SectionC.CornerRadius = UDim.new(0, 6)
 			SectionC.Name = "SectionC"
 			SectionC.Parent = Section
-
 			SectionText.Name = "SectionText"
 			SectionText.Parent = Section
 			SectionText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -402,10 +392,9 @@ function library.new(library, name, theme)
 			SectionText.Size = UDim2.new(0, 401, 0, 36)
 			SectionText.Font = Enum.Font.GothamSemibold
 			SectionText.Text = name
-			SectionText.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+			SectionText.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 			SectionText.TextSize = 16.000
 			SectionText.TextXAlignment = Enum.TextXAlignment.Left
-
 			SectionOpen.Name = "SectionOpen"
 			SectionOpen.Parent = SectionText
 			SectionOpen.BackgroundTransparency = 1
@@ -413,7 +402,6 @@ function library.new(library, name, theme)
 			SectionOpen.Position = UDim2.new(0, -33, 0, 5)
 			SectionOpen.Size = UDim2.new(0, 26, 0, 26)
 			SectionOpen.Image = "rbxassetid://6031302934"
-
 			SectionOpened.Name = "SectionOpened"
 			SectionOpened.Parent = SectionOpen
 			SectionOpened.BackgroundTransparency = 1.000
@@ -421,13 +409,11 @@ function library.new(library, name, theme)
 			SectionOpened.Size = UDim2.new(0, 26, 0, 26)
 			SectionOpened.Image = "rbxassetid://6031302932"
 			SectionOpened.ImageTransparency = 1.000
-
 			SectionToggle.Name = "SectionToggle"
 			SectionToggle.Parent = SectionOpen
 			SectionToggle.BackgroundTransparency = 1
 			SectionToggle.BorderSizePixel = 0
 			SectionToggle.Size = UDim2.new(0, 26, 0, 26)
-
 			Objs.Name = "Objs"
 			Objs.Parent = Section
 			Objs.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -435,33 +421,28 @@ function library.new(library, name, theme)
 			Objs.BorderSizePixel = 0
 			Objs.Position = UDim2.new(0, 6, 0, 36)
 			Objs.Size = UDim2.new(0.986347735, 0, 0, 0)
-
 			ObjsL.Name = "ObjsL"
 			ObjsL.Parent = Objs
 			ObjsL.SortOrder = Enum.SortOrder.LayoutOrder
 			ObjsL.Padding = UDim.new(0, 8)
-
 			local open = TabVal
 			if TabVal ~= false then
 				Section.Size = UDim2.new(0.981000006, 0, 0, open and 36 + ObjsL.AbsoluteContentSize.Y + 8 or 36)
 				SectionOpened.ImageTransparency = (open and 0 or 1)
 				SectionOpen.ImageTransparency = (open and 1 or 0)
 			end
-
 			SectionToggle.MouseButton1Click:Connect(function()
 				open = not open
 				Section.Size = UDim2.new(0.981000006, 0, 0, open and 36 + ObjsL.AbsoluteContentSize.Y + 8 or 36)
 				SectionOpened.ImageTransparency = (open and 0 or 1)
 				SectionOpen.ImageTransparency = (open and 1 or 0)
 			end)
-
 			ObjsL:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 				if not open then
 					return
 				end
 				Section.Size = UDim2.new(0.981000006, 0, 0, 36 + ObjsL.AbsoluteContentSize.Y + 8)
 			end)
-
 			local section = {}
 			function section.Button(section, text, callback)
 				local callback = callback or function() end
@@ -483,10 +464,10 @@ function library.new(library, name, theme)
 				Btn.AutoButtonColor = false
 				Btn.Font = Enum.Font.GothamSemibold
 				Btn.Text = "   " .. text
-				Btn.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				Btn.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				Btn.TextSize = 16.000
 				Btn.TextXAlignment = Enum.TextXAlignment.Left
-				BtnC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				BtnC.CornerRadius = UDim.new(0, 6)
 				BtnC.Name = "BtnC"
 				BtnC.Parent = Btn
 				Btn.MouseButton1Click:Connect(function()
@@ -496,7 +477,6 @@ function library.new(library, name, theme)
 					spawn(callback)
 				end)
 			end
-
 			function section:Label(text)
 				local LabelModule = Instance.new("Frame")
 				local TextLabel = Instance.new("TextLabel")
@@ -506,21 +486,20 @@ function library.new(library, name, theme)
 				LabelModule.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				LabelModule.BackgroundTransparency = 1.000
 				LabelModule.BorderSizePixel = 0
-				LabelModule.Position = UDim2.new(0, 0, NAN, 0)
+				LabelModule.Position = UDim2.new(0, 0, 0, 0)
 				LabelModule.Size = UDim2.new(0, 428, 0, 19)
 				TextLabel.Parent = LabelModule
 				TextLabel.BackgroundColor3 = config.Label_Color
 				TextLabel.Size = UDim2.new(0, 428, 0, 22)
 				TextLabel.Font = Enum.Font.GothamSemibold
 				TextLabel.Text = text
-				TextLabel.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				TextLabel.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				TextLabel.TextSize = 14.000
-				LabelC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				LabelC.CornerRadius = UDim.new(0, 6)
 				LabelC.Name = "LabelC"
 				LabelC.Parent = TextLabel
 				return TextLabel
 			end
-
 			function section.Toggle(section, text, flag, enabled, callback)
 				local callback = callback or function() end
 				local enabled = enabled or false
@@ -549,10 +528,10 @@ function library.new(library, name, theme)
 				ToggleBtn.AutoButtonColor = false
 				ToggleBtn.Font = Enum.Font.GothamSemibold
 				ToggleBtn.Text = "   " .. text
-				ToggleBtn.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				ToggleBtn.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				ToggleBtn.TextSize = 16.000
 				ToggleBtn.TextXAlignment = Enum.TextXAlignment.Left
-				ToggleBtnC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				ToggleBtnC.CornerRadius = UDim.new(0, 6)
 				ToggleBtnC.Name = "ToggleBtnC"
 				ToggleBtnC.Parent = ToggleBtn
 				ToggleDisable.Name = "ToggleDisable"
@@ -565,10 +544,10 @@ function library.new(library, name, theme)
 				ToggleSwitch.Parent = ToggleDisable
 				ToggleSwitch.BackgroundColor3 = config.Toggle_Off
 				ToggleSwitch.Size = UDim2.new(0, 24, 0, 22)
-				ToggleSwitchC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				ToggleSwitchC.CornerRadius = UDim.new(0, 6)
 				ToggleSwitchC.Name = "ToggleSwitchC"
 				ToggleSwitchC.Parent = ToggleSwitch
-				ToggleDisableC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				ToggleDisableC.CornerRadius = UDim.new(0, 6)
 				ToggleDisableC.Name = "ToggleDisableC"
 				ToggleDisableC.Parent = ToggleDisable
 				local funcs = {
@@ -598,7 +577,6 @@ function library.new(library, name, theme)
 				end)
 				return funcs
 			end
-
 			function section.Keybind(section, text, default, callback)
 				local callback = callback or function() end
 				assert(text, "No text provided")
@@ -651,10 +629,10 @@ function library.new(library, name, theme)
 				KeybindBtn.AutoButtonColor = false
 				KeybindBtn.Font = Enum.Font.GothamSemibold
 				KeybindBtn.Text = "   " .. text
-				KeybindBtn.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				KeybindBtn.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				KeybindBtn.TextSize = 16.000
 				KeybindBtn.TextXAlignment = Enum.TextXAlignment.Left
-				KeybindBtnC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				KeybindBtnC.CornerRadius = UDim.new(0, 6)
 				KeybindBtnC.Name = "KeybindBtnC"
 				KeybindBtnC.Parent = KeybindBtn
 				KeybindValue.Name = "KeybindValue"
@@ -666,9 +644,9 @@ function library.new(library, name, theme)
 				KeybindValue.AutoButtonColor = false
 				KeybindValue.Font = Enum.Font.Gotham
 				KeybindValue.Text = keyTxt
-				KeybindValue.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				KeybindValue.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				KeybindValue.TextSize = 14.000
-				KeybindValueC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				KeybindValueC.CornerRadius = UDim.new(0, 6)
 				KeybindValueC.Name = "KeybindValueC"
 				KeybindValueC.Parent = KeybindValue
 				KeybindL.Name = "KeybindL"
@@ -712,7 +690,6 @@ function library.new(library, name, theme)
 				end)
 				KeybindValue.Size = UDim2.new(0, KeybindValue.TextBounds.X + 30, 0, 28)
 			end
-
 			function section.Textbox(section, text, flag, default, callback)
 				local callback = callback or function() end
 				assert(text, "No text provided")
@@ -742,10 +719,10 @@ function library.new(library, name, theme)
 				TextboxBack.AutoButtonColor = false
 				TextboxBack.Font = Enum.Font.GothamSemibold
 				TextboxBack.Text = "   " .. text
-				TextboxBack.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				TextboxBack.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				TextboxBack.TextSize = 16.000
 				TextboxBack.TextXAlignment = Enum.TextXAlignment.Left
-				TextboxBackC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				TextboxBackC.CornerRadius = UDim.new(0, 6)
 				TextboxBackC.Name = "TextboxBackC"
 				TextboxBackC.Parent = TextboxBack
 				BoxBG.Name = "BoxBG"
@@ -757,9 +734,9 @@ function library.new(library, name, theme)
 				BoxBG.AutoButtonColor = false
 				BoxBG.Font = Enum.Font.Gotham
 				BoxBG.Text = ""
-				BoxBG.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				BoxBG.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				BoxBG.TextSize = 14.000
-				BoxBGC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				BoxBGC.CornerRadius = UDim.new(0, 6)
 				BoxBGC.Name = "BoxBGC"
 				BoxBGC.Parent = BoxBG
 				TextBox.Parent = BoxBG
@@ -769,7 +746,7 @@ function library.new(library, name, theme)
 				TextBox.Size = UDim2.new(1, 0, 1, 0)
 				TextBox.Font = Enum.Font.Gotham
 				TextBox.Text = default
-				TextBox.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				TextBox.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				TextBox.TextSize = 14.000
 				TextboxBackL.Name = "TextboxBackL"
 				TextboxBackL.Parent = TextboxBack
@@ -791,7 +768,6 @@ function library.new(library, name, theme)
 				end)
 				BoxBG.Size = UDim2.new(0, TextBox.TextBounds.X + 30, 0, 28)
 			end
-
 			function section.Slider(section, text, flag, default, min, max, precise, callback)
 				local callback = callback or function() end
 				local min = min or 1
@@ -829,10 +805,10 @@ function library.new(library, name, theme)
 				SliderBack.AutoButtonColor = false
 				SliderBack.Font = Enum.Font.GothamSemibold
 				SliderBack.Text = "   " .. text
-				SliderBack.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				SliderBack.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				SliderBack.TextSize = 16.000
 				SliderBack.TextXAlignment = Enum.TextXAlignment.Left
-				SliderBackC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				SliderBackC.CornerRadius = UDim.new(0, 6)
 				SliderBackC.Name = "SliderBackC"
 				SliderBackC.Parent = SliderBack
 				SliderBar.Name = "SliderBar"
@@ -862,7 +838,7 @@ function library.new(library, name, theme)
 				SliderValBG.AutoButtonColor = false
 				SliderValBG.Font = Enum.Font.Gotham
 				SliderValBG.Text = ""
-				SliderValBG.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				SliderValBG.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				SliderValBG.TextSize = 14.000
 				SliderValBGC.CornerRadius = UDim.new(0, 6)
 				SliderValBGC.Name = "SliderValBGC"
@@ -874,8 +850,8 @@ function library.new(library, name, theme)
 				SliderValue.BorderSizePixel = 0
 				SliderValue.Size = UDim2.new(1, 0, 1, 0)
 				SliderValue.Font = Enum.Font.Gotham
-				SliderValue.Text = "1000"
-				SliderValue.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				SliderValue.Text = tostring(default)
+				SliderValue.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				SliderValue.TextSize = 14.000
 				MinSlider.Name = "MinSlider"
 				MinSlider.Parent = SliderModule
@@ -886,7 +862,7 @@ function library.new(library, name, theme)
 				MinSlider.Size = UDim2.new(0, 20, 0, 20)
 				MinSlider.Font = Enum.Font.Gotham
 				MinSlider.Text = "-"
-				MinSlider.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				MinSlider.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				MinSlider.TextSize = 24.000
 				MinSlider.TextWrapped = true
 				AddSlider.Name = "AddSlider"
@@ -899,7 +875,7 @@ function library.new(library, name, theme)
 				AddSlider.Size = UDim2.new(0, 20, 0, 20)
 				AddSlider.Font = Enum.Font.Gotham
 				AddSlider.Text = "+"
-				AddSlider.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				AddSlider.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				AddSlider.TextSize = 24.000
 				AddSlider.TextWrapped = true
 				local funcs = {
@@ -991,7 +967,6 @@ function library.new(library, name, theme)
 				end)
 				return funcs
 			end
-
 			function section.Dropdown(section, text, flag, options, callback)
 				local callback = callback or function() end
 				local options = options or {}
@@ -1022,10 +997,10 @@ function library.new(library, name, theme)
 				DropdownTop.AutoButtonColor = false
 				DropdownTop.Font = Enum.Font.GothamSemibold
 				DropdownTop.Text = ""
-				DropdownTop.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				DropdownTop.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				DropdownTop.TextSize = 16.000
 				DropdownTop.TextXAlignment = Enum.TextXAlignment.Left
-				DropdownTopC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+				DropdownTopC.CornerRadius = UDim.new(0, 6)
 				DropdownTopC.Name = "DropdownTopC"
 				DropdownTopC.Parent = DropdownTop
 				DropdownOpen.Name = "DropdownOpen"
@@ -1038,7 +1013,7 @@ function library.new(library, name, theme)
 				DropdownOpen.Size = UDim2.new(0, 20, 0, 20)
 				DropdownOpen.Font = Enum.Font.Gotham
 				DropdownOpen.Text = "+"
-				DropdownOpen.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				DropdownOpen.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				DropdownOpen.TextSize = 24.000
 				DropdownOpen.TextWrapped = true
 				DropdownText.Name = "DropdownText"
@@ -1049,10 +1024,10 @@ function library.new(library, name, theme)
 				DropdownText.Position = UDim2.new(0.0373831764, 0, 0, 0)
 				DropdownText.Size = UDim2.new(0, 184, 0, 38)
 				DropdownText.Font = Enum.Font.GothamSemibold
-				DropdownText.PlaceholderColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				DropdownText.PlaceholderColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				DropdownText.PlaceholderText = text
 				DropdownText.Text = ""
-				DropdownText.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+				DropdownText.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 				DropdownText.TextSize = 16.000
 				DropdownText.TextXAlignment = Enum.TextXAlignment.Left
 				DropdownModuleL.Name = "DropdownModuleL"
@@ -1127,9 +1102,9 @@ function library.new(library, name, theme)
 					Option.AutoButtonColor = false
 					Option.Font = Enum.Font.Gotham
 					Option.Text = option
-					Option.TextColor3 = Color3.fromRGB(255, 0, 255) -- 更改为蓝粉组合
+					Option.TextColor3 = Color3.fromRGB(255, 128, 255) -- 蓝粉组合
 					Option.TextSize = 14.000
-					OptionC.CornerRadius = UDim.new(0, 10) -- 增大圆角
+					OptionC.CornerRadius = UDim.new(0, 6)
 					OptionC.Name = "OptionC"
 					OptionC.Parent = Option
 					Option.MouseButton1Click:Connect(function()
@@ -1158,14 +1133,10 @@ function library.new(library, name, theme)
 				funcs:SetOptions(options)
 				return funcs
 			end
-
 			return section
 		end
-
 		return tab
 	end
-
 	return window
 end
-
 return library
